@@ -101,7 +101,13 @@ def frontend_fallback(request, *args, **kwargs):
 
     if os.path.exists(index_path):
         with open(index_path, 'r', encoding='utf-8') as f:
-            return HttpResponse(f.read(), content_type='text/html')
+            html = f.read()
+        # Inject Google Client ID from Django settings/env dynamically
+        client_id = getattr(settings, 'GOOGLE_CLIENT_ID', '') or os.environ.get('GOOGLE_CLIENT_ID', '')
+        if client_id:
+            inject_script = f'<script>window.GOOGLE_CLIENT_ID = "{client_id}";</script>'
+            html = html.replace('<head>', f'<head>{inject_script}')
+        return HttpResponse(html, content_type='text/html')
     return HttpResponse(
         "Frontend build not found. Please build the frontend using 'npm run build' inside the frontend directory.",
         status=404
