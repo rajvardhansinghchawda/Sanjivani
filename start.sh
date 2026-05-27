@@ -58,6 +58,10 @@ if [ "${RUN_SEEDERS:-true}" = "true" ]; then
   python scripts/seed_permissions.py || echo "Warning: seed_permissions.py failed, continuing..."
 fi
 
+# Sync database periodic tasks
+echo "Syncing Celery Beat schedules to database..."
+python manage.py sync_periodic_tasks || echo "Warning: sync_periodic_tasks failed, continuing..."
+
 # Collect static files
 echo "Collecting static files (WhiteNoise)..."
 python manage.py collectstatic --noinput
