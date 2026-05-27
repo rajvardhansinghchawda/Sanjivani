@@ -12,7 +12,19 @@ logger = logging.getLogger('medadhere')
 def fill_reminder_window():
     """Hourly: generate ReminderJob rows for the next 7-day rolling window."""
     from .services import ScheduleGenerationService
+    from .models import ReminderJob
+    from django.core.cache import cache
+
     created = ScheduleGenerationService.fill_rolling_window()
+
+    # NEON GUARD: store active pending job count in Redis so frequent tasks
+    # can skip the DB entirely when there's nothing to process.
+    try:
+        pending_count = ReminderJob.objects.filter(status__in=['PENDING', 'SNOOZED']).count()
+        cache.set('active_reminder_count', pending_count, timeout=3600)  # 1-hour TTL
+    except Exception:
+        pass
+
     logger.info(f'fill_reminder_window: {created} reminder jobs created.')
     return {'created': created}
 
@@ -22,7 +34,17 @@ def dispatch_due_reminders():
     """
     Every 2 min: find PENDING/SNOOZED reminders that are now due.
     Dispatches push notifications via NotificationService.
+
+    NEON GUARD: checks Redis first. If no active reminders are known,
+    returns immediately without touching Neon at all.
     """
+    from django.core.cache import cache
+
+    # Redis-first guard — zero DB cost if nothing is pending
+    active_count = cache.get('active_reminder_count')
+    if active_count is not None and active_count == 0:
+        return {'dispatched': 0, 'skipped': 'no_active_reminders'}
+
     from .models import ReminderJob
     now   = timezone.now()
     jobs  = ReminderJob.objects.filter(
@@ -103,7 +125,17 @@ def mark_missed_reminders():
     """
     Every 5 min: mark doses as MISSED only after 2 hours past their scheduled_at time.
     After marking MISSED: sends in-app notification + Twilio voice call to each caregiver.
+
+    NEON GUARD: checks Redis first. If no active reminders are known,
+    returns immediately without touching Neon at all.
     """
+    from django.core.cache import cache
+
+    # Redis-first guard — zero DB cost if nothing is pending
+    active_count = cache.get('active_reminder_count')
+    if active_count is not None and active_count == 0:
+        return {'marked_missed': 0, 'skipped': 'no_active_reminders'}
+
     import datetime as dt
     from .models import ReminderJob
     from apps.clinical.models import PatientCaregiverLink

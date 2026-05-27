@@ -15,7 +15,13 @@ def run_priority_scheduler():
     """
     Phase 3: Run every 2 minutes via Celery Beat.
     Scans all HIGH priority compartments and queues PREPARE_COMPARTMENT if due.
+
+    NEON GUARD: skip DB entirely when no active IoT devices are registered.
     """
+    from django.core.cache import cache
+    if cache.get('active_device_count', 0) == 0:
+        return {'skipped': 'no_active_devices'}
+
     from apps.iot.services import PriorityScheduler
     PriorityScheduler.run_for_all_devices()
 
@@ -24,10 +30,14 @@ def run_priority_scheduler():
 def check_device_heartbeats():
     """Run every 5 minutes. Detect offline devices and broadcast alert."""
     from apps.iot.models import Device
+    from django.core.cache import cache
+
+    # NEON GUARD: keep a count of active devices in Redis so other tasks can skip DB
+    active_devices = list(Device.objects.filter(is_active=True))
+    cache.set('active_device_count', len(active_devices), timeout=600)  # 10-min TTL
+
     threshold = timezone.now() - timedelta(minutes=15)
-    offline_devices = Device.objects.filter(
-        is_active=True, last_seen_at__lt=threshold, last_seen_at__isnull=False
-    )
+    offline_devices = [d for d in active_devices if d.last_seen_at and d.last_seen_at < threshold]
     for device in offline_devices:
         logger.warning("Device offline: %s (last_seen=%s)", device.id, device.last_seen_at)
         try:
@@ -199,7 +209,13 @@ def check_missed_doses_30min():
     """
     Phase 4: Run every 5 minutes.
     If a compartment was prepared 30+ min ago and no DOSE_TAKEN received → alert.
+
+    NEON GUARD: skip DB entirely when no active IoT devices are registered.
     """
+    from django.core.cache import cache
+    if cache.get('active_device_count', 0) == 0:
+        return {'skipped': 'no_active_devices'}
+
     from apps.iot.models import DeviceCompartmentMapping
     threshold = timezone.now() - timedelta(minutes=30)
     overdue = DeviceCompartmentMapping.objects.filter(
