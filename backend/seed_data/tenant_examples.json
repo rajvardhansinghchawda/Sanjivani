@@ -1,0 +1,18 @@
+[
+  {
+    "name": "Apollo Indore",
+    "subdomain": "apollo-indore",
+    "plan": "HOSPITAL",
+    "max_patients": 5000,
+    "is_active": true,
+    "hipaa_baa_signed": true
+  },
+  {
+    "name": "MedAdhere Clinic Demo",
+    "subdomain": "clinic-demo",
+    "plan": "CLINIC",
+    "max_patients": 500,
+    "is_active": true,
+    "hipaa_baa_signed": false
+  }
+]

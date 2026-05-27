@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MedAdhere Invoice {{ invoice_id }}</title>
+    <style>
+        @page {
+            size: a4 portrait;
+            @frame header_frame {           /* Static Frame */
+                -pdf-frame-content: header_content;
+                left: 50pt; width: 512pt; top: 50pt; height: 40pt;
+            }
+            @frame content_frame {          /* Content Frame */
+                left: 50pt; width: 512pt; top: 90pt; height: 632pt;
+            }
+            @frame footer_frame {           /* Another static Frame */
+                -pdf-frame-content: footer_content;
+                left: 50pt; width: 512pt; top: 772pt; height: 20pt;
+            }
+        }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 12px;
+            color: #333333;
+        }
+        h1, h2, h3, h4, p { margin: 0; padding: 0; }
+        
+        .text-teal { color: #0d9488; }
+        .bg-teal-light { background-color: #f0fdfa; border: 1px solid #ccfbf1; }
+        .text-gray-light { color: #6b7280; }
+        .font-bold { font-weight: bold; }
+        .font-semibold { font-weight: bold; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        
+        /* Layout Tables */
+        .layout-table { width: 100%; border: none; margin-bottom: 20px; }
+        .layout-table td { vertical-align: top; }
+        
+        .header h1 { font-size: 24px; color: #111827; }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 10px;
+        }
+        .bg-green { background-color: #22c55e; }
+        .bg-yellow { background-color: #eab308; }
+        
+        .section-title {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #6b7280;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .box {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        /* Data Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .data-table th {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 10px 5px;
+            text-align: left;
+            font-weight: bold;
+            color: #111827;
+        }
+        .data-table th.text-right { text-align: right; }
+        .data-table td {
+            border-bottom: 1px solid #f3f4f6;
+            padding: 10px 5px;
+        }
+        
+        /* Summary Table */
+        .summary-table { width: 100%; }
+        .summary-table td { padding: 5px 0; }
+        .total-row td {
+            border-top: 2px solid #e5e7eb;
+            padding-top: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #111827;
+        }
+        
+        .footer-notes {
+            margin-top: 30px;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 15px;
+            font-size: 11px;
+            color: #4b5563;
+        }
+        
+        .goal-box {
+            margin-top: 40px;
+            background-color: #f9fafb;
+            padding: 15px;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Content -->
+    <div id="header_content">
+        <table class="layout-table header">
+            <tr>
+                <td width="50%">
+                    <h2 class="text-teal">MedAdhere</h2>
+                    <p class="text-gray-light">Your Medication Adherence Partner</p>
+                </td>
+                <td width="50%" class="text-right">
+                    <h1>INVOICE</h1>
+                    <p class="text-gray-light">Invoice ID: <span class="font-bold">#{{ invoice_id }}</span></p>
+                    <p class="text-gray-light">Date: <span class="font-bold">{{ invoice_date|date:"M d, Y" }}</span></p>
+                    <br/>
+                    <span class="badge {% if payment_status == 'PAID' %}bg-green{% else %}bg-yellow{% endif %}">
+                        {{ payment_status }}
+                    </span>
+                </td>
+            </tr>
+        </table>
+        <hr style="border: 0; border-top: 1px solid #f3f4f6; margin-bottom: 20px;"/>
+    </div>
+
+    <!-- From / To Section -->
+    <table class="layout-table">
+        <tr>
+            <td width="50%">
+                <p class="section-title">From</p>
+                <p class="font-bold">MedAdhere Platform</p>
+                <p>123 Health Ave, Wellness City</p>
+                <p>support@medadhere.io</p>
+                <p>+1 (555) HEALTHY</p>
+            </td>
+            <td width="50%" class="text-right">
+                <p class="section-title">To</p>
+                <p class="font-bold">{{ patient_name }}</p>
+                <p>{{ patient_email }}</p>
+                <p>{{ hospital_tenant_name }}</p>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Subscription Details -->
+    <div class="box bg-teal-light">
+        <h3 class="text-teal" style="margin-bottom: 10px;">Subscription Details</h3>
+        <table class="layout-table" style="margin-bottom: 0;">
+            <tr>
+                <td width="50%">
+                    <p class="section-title text-teal">Plan</p>
+                    <p class="font-bold">{{ plan_name }}</p>
+                </td>
+                <td width="50%">
+                    <p class="section-title text-teal">Billing Period</p>
+                    <p>{{ billing_period }}</p>
+                </td>
+            </tr>
+        </table>
+        <p style="margin-top: 10px; color: #4b5563;">{{ subscription_description }}</p>
+    </div>
+
+    <!-- Service Summary -->
+    <h3 style="margin-bottom: 10px;">Service Summary</h3>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Billing Period</th>
+                <th class="text-right">Unit Price</th>
+                <th class="text-right">Tax</th>
+                <th class="text-right">Total Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><span class="font-bold">{{ plan_name }} Plan</span></td>
+                <td>{{ billing_period }}</td>
+                <td class="text-right">Rs. {{ amount }}</td>
+                <td class="text-right">Rs. {{ tax }}</td>
+                <td class="text-right font-bold">Rs. {{ grand_total }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Totals -->
+    <table class="layout-table">
+        <tr>
+            <td width="60%"></td>
+            <td width="40%">
+                <table class="summary-table text-right">
+                    <tr>
+                        <td>Subtotal</td>
+                        <td class="font-bold">Rs. {{ amount }}</td>
+                    </tr>
+                    <tr>
+                        <td>Total Tax</td>
+                        <td class="font-bold">Rs. {{ tax }}</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td>Total Amount Due</td>
+                        <td>Rs. {{ grand_total }}</td>
+                    </tr>
+                </table>
+                <p class="text-gray-light text-right" style="margin-top: 5px; font-size: 10px;">*Amount in INR (Rs. )</p>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Footer Notes -->
+    <div class="footer-notes">
+        <p><span class="font-bold">Payment Method:</span> {{ payment_method }}</p>
+        <p><span class="font-bold">Support:</span> Contact us at <a href="mailto:{{ support_email }}" style="color: #0d9488;">{{ support_email }}</a> or call +1 (555) HEALTHY</p>
+        <p style="margin-top: 10px; font-size: 10px;"><span class="font-bold">Terms & Conditions:</span> Payment is due within {{ due_days }} days of invoice date. Late payments may incur fees.</p>
+    </div>
+
+    <!-- Goal Box -->
+    <div class="goal-box">
+        <h4 class="text-teal" style="margin-bottom: 5px;">Medication Adherence Goal</h4>
+        <p style="font-style: italic;">“{{ health_tip }}”</p>
+        <p class="text-gray-light" style="margin-top: 5px; font-size: 10px;">- Stay on track for better health! -</p>
+    </div>
+
+    <!-- Footer Content for PDF pages -->
+    <div id="footer_content" class="text-center text-gray-light" style="font-size: 9px;">
+        MedAdhere - Generated Invoice #{{ invoice_id }} - <pdf:pagenumber>
+    </div>
+
+</body>
+</html>

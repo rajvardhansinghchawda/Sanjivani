@@ -1,0 +1,7 @@
+{
+  "product_id": "REPLACE_WITH_PRODUCT_UUID",
+  "batch_size": 1000,
+  "prefix": "MEDA",
+  "format": "MEDA-XXXX-XXXX-XXXX",
+  "notes": "Use this template with generate_device_ids to provision a batch of unique device IDs."
+}

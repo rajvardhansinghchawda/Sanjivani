@@ -1,0 +1,2 @@
+# Model artifacts directory — tracked by Git (directory only, not contents)
+# Trained .pkl files are excluded via .gitignore

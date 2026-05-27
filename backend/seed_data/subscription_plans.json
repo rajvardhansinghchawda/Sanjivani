@@ -1,0 +1,50 @@
+[
+  {
+    "name": "Free",
+    "slug": "free",
+    "price_monthly": 0,
+    "price_yearly": 0,
+    "features": {
+      "push_notifications": true,
+      "sms_notifications": false,
+      "email_notifications": false,
+      "whatsapp_notifications": false,
+      "voice_notifications": false,
+      "ai_insights": false,
+      "max_medications": 3,
+      "max_caregivers": 1
+    }
+  },
+  {
+    "name": "Freemium",
+    "slug": "freemium",
+    "price_monthly": 199,
+    "price_yearly": 1999,
+    "features": {
+      "push_notifications": true,
+      "sms_notifications": true,
+      "email_notifications": true,
+      "whatsapp_notifications": false,
+      "voice_notifications": false,
+      "ai_insights": false,
+      "max_medications": 10,
+      "max_caregivers": 3
+    }
+  },
+  {
+    "name": "Premium",
+    "slug": "premium",
+    "price_monthly": 499,
+    "price_yearly": 4999,
+    "features": {
+      "push_notifications": true,
+      "sms_notifications": true,
+      "email_notifications": true,
+      "whatsapp_notifications": true,
+      "voice_notifications": true,
+      "ai_insights": true,
+      "max_medications": 50,
+      "max_caregivers": 10
+    }
+  }
+]

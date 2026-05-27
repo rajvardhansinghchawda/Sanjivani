@@ -1,0 +1,23 @@
+[
+  {
+    "drug_a": "Warfarin",
+    "drug_b": "Aspirin",
+    "severity": "SEVERE",
+    "description": "Increased bleeding risk with combined anticoagulant and antiplatelet use.",
+    "source": "OPENFDA"
+  },
+  {
+    "drug_a": "Lisinopril",
+    "drug_b": "Losartan",
+    "severity": "MODERATE",
+    "description": "Dual renin-angiotensin system blockade may increase renal adverse events.",
+    "source": "OPENFDA"
+  },
+  {
+    "drug_a": "Clopidogrel",
+    "drug_b": "Omeprazole",
+    "severity": "MODERATE",
+    "description": "Potential reduction in clopidogrel activation.",
+    "source": "OPENFDA"
+  }
+]

@@ -1,0 +1,14 @@
+[
+  {"code": "E11.9", "name": "Type 2 diabetes mellitus without complications", "severity": "CHRONIC"},
+  {"code": "I10", "name": "Essential (primary) hypertension", "severity": "CHRONIC"},
+  {"code": "E78.5", "name": "Hyperlipidemia, unspecified", "severity": "CHRONIC"},
+  {"code": "J45.909", "name": "Unspecified asthma, uncomplicated", "severity": "CHRONIC"},
+  {"code": "E03.9", "name": "Hypothyroidism, unspecified", "severity": "CHRONIC"},
+  {"code": "K21.9", "name": "Gastro-esophageal reflux disease without esophagitis", "severity": "CHRONIC"},
+  {"code": "I50.9", "name": "Heart failure, unspecified", "severity": "CHRONIC"},
+  {"code": "N18.9", "name": "Chronic kidney disease, unspecified", "severity": "CHRONIC"},
+  {"code": "M54.5", "name": "Low back pain", "severity": "ACUTE"},
+  {"code": "R51.9", "name": "Headache, unspecified", "severity": "ACUTE"},
+  {"code": "Z79.899", "name": "Other long term (current) drug therapy", "severity": "SUPPORTING"},
+  {"code": "Z83.3", "name": "Family history of diabetes mellitus", "severity": "SUPPORTING"}
+]

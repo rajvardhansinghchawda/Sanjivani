@@ -1,0 +1,86 @@
+[project]
+name = "medadhere-backend"
+version = "0.1.0"
+description = "Backend for Intelligent Medication Adherence Monitoring System"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "Django==5.0.4",
+    "djangorestframework==3.15.1",
+    "djangorestframework-simplejwt==5.3.1",
+    "django-cors-headers==4.3.1",
+    "psycopg[binary]",
+    "celery[redis]==5.3.6",
+    "redis==5.0.3",
+    "pyotp==2.9.0",
+    "cryptography==42.0.5",
+    "django-ratelimit==4.1.0",
+    "python-dotenv==1.0.1",
+    "gunicorn==21.2.0",
+    "sentry-sdk==1.43.0",
+    "pytz==2024.1",
+    "Pillow>=10.3.0",
+    "django-filter==24.2",
+    "drf-spectacular==0.27.2",
+    "django-celery-beat==2.6.0",
+    "django-celery-results==2.5.1",
+    "twilio==9.0.4",
+    "sendgrid==6.11.0",
+    "boto3==1.34.69",
+    "qrcode==7.4.2",
+    "xgboost>=2.0.0",
+    "scikit-learn>=1.3.0",
+    "shap>=0.44.0",
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "deep-translator>=1.11.4",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 100
+target-version = ['py312']
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | migrations
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+skip = ["migrations", ".venv", "env"]
+multi_line_output = 3
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.development"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+addopts = "--nomigrations --reuse-db"
+testpaths = ["tests", "apps"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+exclude = [
+    ".git",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".venv",
+    "migrations",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP", "B"]
+ignore = []

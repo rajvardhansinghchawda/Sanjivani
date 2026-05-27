@@ -1,0 +1,8 @@
+[
+  {
+    "caregiver_email": "caregiver@medadhere.test",
+    "patients": "all",
+    "permission_level": "full_access",
+    "is_active": true
+  }
+]

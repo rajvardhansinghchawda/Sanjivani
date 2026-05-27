@@ -1,0 +1,26 @@
+[
+  {
+    "name": "PharmEasy",
+    "slug": "pharmeasy",
+    "api_base_url": "https://api.pharmeasy.in/v1",
+    "is_active": true,
+    "supported_states": ["MH", "DL", "KA", "TN", "TS", "GJ"],
+    "avg_delivery_hrs": 36
+  },
+  {
+    "name": "1mg",
+    "slug": "1mg",
+    "api_base_url": "https://api.1mg.com/v1",
+    "is_active": true,
+    "supported_states": ["MH", "DL", "KA", "TN", "TS", "GJ", "UP"],
+    "avg_delivery_hrs": 48
+  },
+  {
+    "name": "Netmeds",
+    "slug": "netmeds",
+    "api_base_url": "https://api.netmeds.com/v1",
+    "is_active": true,
+    "supported_states": ["MH", "DL", "KA", "TN", "TS", "GJ", "UP", "WB"],
+    "avg_delivery_hrs": 60
+  }
+]

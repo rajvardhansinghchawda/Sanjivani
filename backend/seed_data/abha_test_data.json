@@ -1,0 +1,18 @@
+[
+  {
+    "abha_id": "1234-5678-9012-34",
+    "abha_address": "demo01@abdm",
+    "patient_name": "Demo Patient",
+    "source_hospital": "Demo Hospital",
+    "record_type": "Prescription",
+    "status": "IMPORTED"
+  },
+  {
+    "abha_id": "1234-5678-9012-35",
+    "abha_address": "demo02@abdm",
+    "patient_name": "Demo Patient 2",
+    "source_hospital": "City Clinic",
+    "record_type": "DischargeSummary",
+    "status": "DUPLICATE"
+  }
+]

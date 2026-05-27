@@ -1,0 +1,167 @@
+x-backend-common: &backend-common
+  image: medadhere-backend:latest
+  build:
+    context: ./backend
+    dockerfile: Dockerfile
+  pull_policy: never
+  env_file:
+    - ./backend/.env
+  environment: &backend-environment
+    DJANGO_SETTINGS_MODULE: config.settings.development
+    # NOTE: Since you are using Neon DB, make sure DB_HOST, DB_PORT, 
+    # DB_NAME, DB_USER, DB_PASSWORD are provided in backend/.env
+    REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+    AI_MODEL_DIR: /app/apps/ai_engine/models/artifacts
+    AI_DATA_DIR: /app/apps/ai_engine/datasets/raw
+    WAIT_FOR_DB: "false" # Set to false since using external Neon DB
+    WAIT_FOR_REDIS: "true"
+    TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-}
+    TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-}
+    TWILIO_WHATSAPP_FROM: ${TWILIO_WHATSAPP_FROM:-whatsapp:+14155238886}
+
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  backend:
+    <<: *backend-common
+    restart: unless-stopped
+    environment:
+      <<: *backend-environment
+      RUN_MIGRATIONS: "true"
+    command: ["daphne", "-b", "0.0.0.0", "-p", "8000", "config.asgi:application"]
+    ports:
+      - "8000:8000"
+    volumes:
+      - media_data:/app/media
+      - ai_artifacts:/app/apps/ai_engine/models/artifacts
+      - ai_data:/app/apps/ai_engine/datasets/raw
+    depends_on:
+      redis:
+        condition: service_healthy
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./backend
+          target: /app
+          ignore:
+            - .git/
+            - .venv/
+            - env/
+            - __pycache__/
+            - "**/*.pyc"
+            - reports/
+            - db.sqlite3
+            - media/
+            - .pytest_cache/
+            - .mypy_cache/
+            - .ruff_cache/
+        - action: rebuild
+          path: ./backend/requirements.txt
+
+  celery-worker:
+    <<: *backend-common
+    restart: unless-stopped
+    environment:
+      <<: *backend-environment
+      RUN_MIGRATIONS: "false"
+    command: ["celery", "-A", "config", "worker", "-l", "info"]
+    volumes:
+      - ai_artifacts:/app/apps/ai_engine/models/artifacts
+      - ai_data:/app/apps/ai_engine/datasets/raw
+    depends_on:
+      redis:
+        condition: service_healthy
+      backend:
+        condition: service_started
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./backend
+          target: /app
+          ignore:
+            - .git/
+            - .venv/
+            - env/
+            - __pycache__/
+            - "**/*.pyc"
+            - reports/
+            - db.sqlite3
+            - media/
+            - .pytest_cache/
+            - .mypy_cache/
+            - .ruff_cache/
+
+  celery-beat:
+    <<: *backend-common
+    restart: unless-stopped
+    environment:
+      <<: *backend-environment
+      RUN_MIGRATIONS: "false"
+    command: ["celery", "-A", "config", "beat", "-l", "info"]
+    volumes:
+      - ai_artifacts:/app/apps/ai_engine/models/artifacts
+      - ai_data:/app/apps/ai_engine/datasets/raw
+    depends_on:
+      redis:
+        condition: service_healthy
+      backend:
+        condition: service_started
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./backend
+          target: /app
+          ignore:
+            - .git/
+            - .venv/
+            - env/
+            - __pycache__/
+            - "**/*.pyc"
+            - reports/
+            - db.sqlite3
+            - media/
+            - .pytest_cache/
+            - .mypy_cache/
+            - .ruff_cache/
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    env_file:
+      - ./frontend/.env
+    depends_on:
+      - backend
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend/src
+          target: /app/src
+        - action: sync
+          path: ./frontend/public
+          target: /app/public
+        - action: rebuild
+          path: ./frontend/package.json
+
+volumes:
+  redis_data:
+  media_data:
+  ai_artifacts:
+  ai_data:

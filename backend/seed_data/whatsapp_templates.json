@@ -1,0 +1,32 @@
+[
+  {
+    "code": "WELCOME",
+    "language": "en",
+    "title": "Welcome to MedAdhere",
+    "body": "Welcome to MedAdhere. Your reminders, adherence tracking, and caregiver support are now active."
+  },
+  {
+    "code": "DOSE_REMINDER",
+    "language": "en",
+    "title": "Dose reminder",
+    "body": "It is time for your medicine. Reply 1 if you took it, 2 if you skipped it, or 3 if you need help."
+  },
+  {
+    "code": "HELP",
+    "language": "en",
+    "title": "Need help",
+    "body": "Reply with your concern and we will guide you through the next step."
+  },
+  {
+    "code": "WELCOME",
+    "language": "hi",
+    "title": "MedAdhere में आपका स्वागत है",
+    "body": "MedAdhere में आपका स्वागत है। आपकी दवा याद दिलाने, पालन ट्रैकिंग, और देखभाल सहायता अब चालू है।"
+  },
+  {
+    "code": "DOSE_REMINDER",
+    "language": "hi",
+    "title": "दवा याद दिलाना",
+    "body": "आपकी दवा का समय हो गया है। 1 भेजें यदि आपने दवा ली, 2 यदि छोड़ी, या 3 यदि मदद चाहिए।"
+  }
+]

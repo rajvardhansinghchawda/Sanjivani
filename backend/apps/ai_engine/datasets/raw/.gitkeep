@@ -1,0 +1,4 @@
+# Raw training data directory — tracked by Git (directory only, not contents)
+# Generated CSV files are excluded via .gitignore
+# Run: python manage.py ai_train --generate-data
+# Or:  python -m apps.ai_engine.datasets.generator --patients 10000 --days 90

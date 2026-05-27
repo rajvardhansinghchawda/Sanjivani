@@ -1,0 +1,147 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-xl: 16px;
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --font-sans: "Lato", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Sora", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular;
+
+  --shadow-elevation-1: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-elevation-2: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-elevation-3: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  
+  --animate-in: enter 150ms ease-out;
+  --animate-out: exit 150ms ease-in;
+}
+
+@layer base {
+  :root {
+    --background: #F9FBFC;
+    --foreground: #1A2B3C;
+
+    --card: #FFFFFF;
+    --card-foreground: #1A2B3C;
+
+    --popover: #FFFFFF;
+    --popover-foreground: #1A2B3C;
+
+    --primary: #0B6E7A;
+    --primary-foreground: #FFFFFF;
+
+    --secondary: #E8F7F8;
+    --secondary-foreground: #0B6E7A;
+
+    --muted: #F1F5F9;
+    --muted-foreground: #7A8A99;
+
+    --accent: #F5A623;
+    --accent-foreground: #FFFFFF;
+
+    --destructive: #FF6B6B;
+    --destructive-foreground: #FFFFFF;
+
+    --success: #27AE60;
+    --success-foreground: #FFFFFF;
+
+    --border: #E2E8F0;
+    --input: #E2E8F0;
+    --ring: #0B6E7A;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: #0F172A;
+    --foreground: #F8FAFC;
+
+    --card: #1E293B;
+    --card-foreground: #F8FAFC;
+
+    --popover: #1E293B;
+    --popover-foreground: #F8FAFC;
+
+    --primary: #0D9488;
+    --primary-foreground: #FFFFFF;
+
+    --secondary: #1E293B;
+    --secondary-foreground: #2DD4BF;
+
+    --muted: #1E293B;
+    --muted-foreground: #94A3B8;
+
+    --accent: #F5A623;
+    --accent-foreground: #FFFFFF;
+
+    --destructive: #EF4444;
+    --destructive-foreground: #FFFFFF;
+
+    --success: #10B981;
+    --success-foreground: #FFFFFF;
+
+    --border: #334155;
+    --input: #334155;
+    --ring: #2DD4BF;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-bold;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-background;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/20 rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground/40;
+}

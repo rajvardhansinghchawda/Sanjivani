@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block subject %}Aarogyam{% endblock %}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#F9FBFC;font-family:'Lato',Arial,sans-serif;color:#1A2B3C;">
+
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F9FBFC;padding:40px 16px;">
+    <tr>
+      <td align="center">
+
+        <!-- Card -->
+        <table width="100%" cellpadding="0" cellspacing="0" border="0"
+               style="max-width:520px;background-color:#FFFFFF;border-radius:16px;
+                      border:1px solid #E2E8F0;
+                      box-shadow:0 4px 24px rgba(11,110,122,0.08);">
+
+          <!-- ── Header ── -->
+          <tr>
+            <td style="background:linear-gradient(135deg,#0B6E7A 0%,#0d8a99 100%);
+                        border-radius:16px 16px 0 0;padding:28px 36px;">
+              <table cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <!-- Logo icon -->
+                  <td style="vertical-align:middle;padding-right:12px;">
+                    <table cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="background:rgba(255,255,255,0.18);border-radius:12px;
+                                    width:44px;height:44px;text-align:center;vertical-align:middle;">
+                          <!-- Aarogyam SVG logo mark -->
+                          <svg width="28" height="28" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Overlapping ovals forming the Aarogyam icon -->
+                            <ellipse cx="9"  cy="14" rx="7" ry="4" fill="none" stroke="white" stroke-width="2.2"
+                                     transform="rotate(-45 9 14)"/>
+                            <ellipse cx="19" cy="14" rx="7" ry="4" fill="none" stroke="white" stroke-width="2.2"
+                                     transform="rotate(45 19 14)"/>
+                            <circle cx="14" cy="14" r="2.5" fill="white"/>
+                          </svg>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                  <!-- Brand name -->
+                  <td style="vertical-align:middle;">
+                    <span style="font-family:'Sora',Arial,sans-serif;font-size:22px;
+                                 font-weight:800;color:#FFFFFF;letter-spacing:-0.3px;">
+                      Aarogyam
+                    </span>
+                    <br/>
+                    <span style="font-size:11px;color:rgba(255,255,255,0.70);
+                                 letter-spacing:1.5px;text-transform:uppercase;font-weight:600;">
+                      Your Health, Our Commitment
+                    </span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ── Content block ── -->
+          <tr>
+            <td style="padding:32px 36px 24px;">
+              {% block content %}{% endblock %}
+            </td>
+          </tr>
+
+          <!-- ── Divider ── -->
+          <tr>
+            <td style="padding:0 36px;">
+              <div style="height:1px;background-color:#E2E8F0;"></div>
+            </td>
+          </tr>
+
+          <!-- ── Footer ── -->
+          <tr>
+            <td style="padding:20px 36px 28px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td>
+                    <p style="margin:0;font-size:11px;color:#7A8A99;line-height:1.6;">
+                      Sent by <strong style="color:#0B6E7A;">Aarogyam</strong> &mdash;
+                      Your Health, Our Commitment.<br/>
+                      This is an automated message. Please do not reply.
+                    </p>
+                  </td>
+                  <td align="right">
+                    <p style="margin:0;font-size:11px;color:#E2E8F0;">&copy; 2025 Aarogyam</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+        </table>
+        <!-- /Card -->
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

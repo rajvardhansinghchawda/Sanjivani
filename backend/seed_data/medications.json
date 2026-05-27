@@ -1,0 +1,138 @@
+[
+  {
+    "name": "Metformin",
+    "generic_name": "Metformin Hydrochloride",
+    "drug_class": "Biguanide",
+    "form": "TABLET",
+    "default_unit": "mg",
+    "strength": "500mg",
+    "requires_food": true,
+    "is_verified": true
+  },
+  {
+    "name": "Amlodipine",
+    "generic_name": "Amlodipine Besylate",
+    "drug_class": "Calcium Channel Blocker",
+    "form": "TABLET",
+    "default_unit": "mg",
+    "strength": "5mg",
+    "is_verified": true
+  },
+  {
+    "name": "Atorvastatin",
+    "generic_name": "Atorvastatin Calcium",
+    "drug_class": "Statin",
+    "form": "TABLET",
+    "default_unit": "mg",
+    "strength": "10mg",
+    "is_verified": true
+  },
+  {
+    "name": "Lisinopril",
+    "generic_name": "Lisinopril",
+    "drug_class": "ACE Inhibitor",
+    "form": "TABLET",
+    "default_unit": "mg",
+    "strength": "10mg",
+    "is_verified": true
+  },
+  {
+    "name": "Losartan",
+    "generic_name": "Losartan Potassium",
+    "drug_class": "ARB",
+    "form": "TABLET",
+    "default_unit": "mg",
+    "strength": "50mg",
+    "is_verified": true
+  },
+  {
+    "name": "Omeprazole",
+    "generic_name": "Omeprazole",
+    "drug_class": "PPI",
+    "form": "CAPSULE",
+    "default_unit": "mg",
+    "strength": "20mg",
+    "is_verified": true
+  },
+  {
+    "name": "Paracetamol",
+    "generic_name": "Acetaminophen",
+    "drug_class": "Analgesic/Antipyretic",
+    "form": "TABLET",
+    "default_unit": "mg",
+    "strength": "500mg",
+    "is_verified": true
+  },
+  {
+    "name": "Aspirin",
+    "generic_name": "Acetylsalicylic Acid",
+    "drug_class": "NSAID/Antiplatelet",
+    "form": "TABLET",
+    "default_unit": "mg",
+    "strength": "75mg",
+    "is_verified": true
+  },
+  {
+    "name": "Levothyroxine",
+    "generic_name": "Levothyroxine Sodium",
+    "drug_class": "Thyroid Hormone",
+    "form": "TABLET",
+    "default_unit": "mcg",
+    "strength": "50mcg",
+    "is_verified": true
+  },
+  {
+    "name": "Salbutamol",
+    "generic_name": "Albuterol",
+    "drug_class": "Beta-2 Agonist",
+    "form": "INHALER",
+    "default_unit": "puff",
+    "is_verified": true
+  },
+  {
+    "name": "Insulin Glargine",
+    "generic_name": "Insulin Glargine",
+    "drug_class": "Insulin",
+    "form": "INJECTION",
+    "default_unit": "units",
+    "refrigeration_required": true,
+    "is_verified": true
+  },
+  {
+    "name": "Clopidogrel",
+    "generic_name": "Clopidogrel Bisulfate",
+    "drug_class": "Antiplatelet",
+    "form": "TABLET",
+    "default_unit": "mg",
+    "strength": "75mg",
+    "is_verified": true
+  },
+  {
+    "name": "Furosemide",
+    "generic_name": "Furosemide",
+    "drug_class": "Loop Diuretic",
+    "form": "TABLET",
+    "default_unit": "mg",
+    "strength": "40mg",
+    "is_verified": true
+  },
+  {
+    "name": "Warfarin",
+    "generic_name": "Warfarin Sodium",
+    "drug_class": "Anticoagulant",
+    "form": "TABLET",
+    "default_unit": "mg",
+    "strength": "5mg",
+    "is_controlled_substance": true,
+    "is_verified": true
+  },
+  {
+    "name": "Pantoprazole",
+    "generic_name": "Pantoprazole Sodium",
+    "drug_class": "PPI",
+    "form": "TABLET",
+    "default_unit": "mg",
+    "strength": "40mg",
+    "is_verified": true
+  }
+]
