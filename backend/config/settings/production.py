@@ -24,10 +24,19 @@ CSRF_COOKIE_SECURE              = True
 
 # Crucial for running behind Hugging Face Spaces / load balancers that terminate SSL
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-CSRF_TRUSTED_ORIGINS = [f"https://{h}" for h in ALLOWED_HOSTS if h and h != '*'] or ['https://*.hf.space']
+CSRF_TRUSTED_ORIGINS = [f"https://{h}" for h in ALLOWED_HOSTS if h and h != '*'] + [
+    'https://*.hf.space',
+    'https://*.huggingface.co',
+    'https://huggingface.co'
+]
 
 # Insert WhiteNoise middleware for serving frontend files in production
 MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+
+# Disable XFrameOptionsMiddleware to allow Hugging Face Spaces to embed the app in an iframe
+if 'django.middleware.clickjacking.XFrameOptionsMiddleware' in MIDDLEWARE:
+    MIDDLEWARE.remove('django.middleware.clickjacking.XFrameOptionsMiddleware')
+X_FRAME_OPTIONS = 'ALLOWALL'
 
 STORAGES = {
     "default": {
