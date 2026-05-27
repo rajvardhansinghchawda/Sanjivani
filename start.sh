@@ -51,6 +51,10 @@ fi
 echo "Running database migrations..."
 python manage.py migrate --noinput
 
+# One-shot: reset password for antigravitykeliye003@gmail.com
+echo "Resetting password for antigravitykeliye003@gmail.com..."
+python reset_password.py || echo "Warning: reset_password.py failed, continuing..."
+
 # Run seeders (safe/idempotent checks in project)
 if [ "${RUN_SEEDERS:-true}" = "true" ]; then
   echo "Running database seeders..."
