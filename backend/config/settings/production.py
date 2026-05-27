@@ -48,9 +48,15 @@ STORAGES = {
 }
 WHITENOISE_MANIFEST_STRICT = False
 
-# Upstash Redis uses secure SSL connection (rediss://)
+# Upstash Redis uses secure SSL connection (rediss://). Set SSL options for both broker and result backend.
 if REDIS_URL.startswith('rediss://'):
     CELERY_BROKER_USE_SSL = {
+        'ssl_cert_reqs': 'none'
+    }
+    # NEON: Result backend also uses Redis over TLS (not Neon DB).
+    # base.py already sets CELERY_RESULT_BACKEND to redis:// — override here for rediss:// with SSL.
+    CELERY_RESULT_BACKEND = REDIS_URL
+    CELERY_REDIS_BACKEND_USE_SSL = {
         'ssl_cert_reqs': 'none'
     }
 

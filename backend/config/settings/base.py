@@ -96,7 +96,7 @@ DATABASES = {
         'HOST':         os.environ.get('DB_HOST', '127.0.0.1'),  # IP avoids reverse-DNS lookup
         'PORT':         os.environ.get('DB_PORT', '5432'),
         'CONN_MAX_AGE': 600,   # Reuse connections for 10 min — critical for cloud DBs like Neon
-        'CONN_HEALTH_CHECKS': True,
+        'CONN_HEALTH_CHECKS': False,  # NEON: Disabled — avoids a SELECT $1 ping on every request (CONN_MAX_AGE handles reuse)
         'OPTIONS': {
             'connect_timeout': 10,
             'sslmode': 'require',  # Neon requires SSL; explicit here prevents per-request TLS negotiation
@@ -114,7 +114,7 @@ if os.environ.get('DATABASE_URL'):
     DATABASES['default'].setdefault('OPTIONS', {})
     DATABASES['default']['OPTIONS']['sslmode'] = 'require'
     DATABASES['default']['OPTIONS']['connect_timeout'] = 10
-    DATABASES['default']['CONN_HEALTH_CHECKS'] = True
+    DATABASES['default']['CONN_HEALTH_CHECKS'] = False  # NEON: Disabled — avoids a SELECT $1 ping on every request
 
 
 # ─── Cache / Redis ───────────────────────────────────────────────────────────
@@ -138,13 +138,28 @@ CHANNEL_LAYERS = {
 
 # ─── Celery ──────────────────────────────────────────────────────────────────
 CELERY_BROKER_URL          = REDIS_URL
-CELERY_RESULT_BACKEND      = 'django-db'
+
+# NEON: Store task results in Redis (Upstash), NOT in Neon PostgreSQL.
+# This eliminates all INSERT/UPDATE to django_celery_results_taskresult.
+# django-celery-results is kept installed for admin visibility but not used as backend.
+CELERY_RESULT_BACKEND      = 'redis://' + REDIS_URL.split('://', 1)[-1] if REDIS_URL else 'redis://127.0.0.1:6379/1'
+
 CELERY_ACCEPT_CONTENT      = ['json']
 CELERY_TASK_SERIALIZER     = 'json'
 CELERY_RESULT_SERIALIZER   = 'json'
 CELERY_TIMEZONE            = 'UTC'
 CELERY_BEAT_SCHEDULER      = 'django_celery_beat.schedulers:DatabaseScheduler'
-CELERY_TASK_TRACK_STARTED  = True
+
+# NEON: Increase Beat's schedule-check interval from default 5s → 300s.
+# This reduces SELECT on django_celery_beat_periodictasks from ~6800/hr to ~12/hr.
+# Tasks still fire on-time; this only controls how often Beat re-reads the DB schedule.
+CELERY_BEAT_MAX_LOOP_INTERVAL = 300
+
+# NEON: Ignore task results by default — fire-and-forget tasks don't need DB storage.
+# Tasks that explicitly need their result can set @shared_task(ignore_result=False).
+CELERY_TASK_IGNORE_RESULT  = True
+
+CELERY_TASK_TRACK_STARTED  = False  # NEON: Disabled — avoids extra DB writes on task start
 CELERY_TASK_TIME_LIMIT     = 300   # 5 min hard limit per task
 
 # ─── REST Framework ──────────────────────────────────────────────────────────
