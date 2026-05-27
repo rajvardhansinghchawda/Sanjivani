@@ -67,7 +67,7 @@ class NotificationDispatcher:
         channels = ['IN_APP']  # always
 
         # Push
-        if (prefs is None or prefs.push_enabled) and user.devices.filter(is_active=True).exists():
+        if (prefs is None or prefs.push_enabled) and user.smart_devices.filter(is_active=True).exists():
             channels.append('PUSH')
 
         # Email
@@ -96,7 +96,7 @@ class NotificationDispatcher:
             import firebase_admin
             from firebase_admin import messaging
             user    = notification.user
-            tokens  = list(user.devices.filter(is_active=True).values_list('push_token', flat=True))
+            tokens  = list(user.smart_devices.filter(is_active=True).values_list('push_token', flat=True))
             tokens  = [t for t in tokens if t]
             if not tokens:
                 return False

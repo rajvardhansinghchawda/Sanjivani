@@ -94,6 +94,44 @@ from agenthandover import (
 logger = logging.getLogger('medadhere.extensions')
 
 
+# ── Global Constants defined for runtime usage ────────────────────────────────
+WA_STATE_IDLE          = 'IDLE'
+WA_STATE_AWAITING_DOSE = 'AWAITING_DOSE_RESPONSE'   # sent reminder, waiting
+WA_STATE_ONBOARDING_1  = 'ONBOARDING_LANGUAGE'
+WA_STATE_ONBOARDING_2  = 'ONBOARDING_NAME'
+WA_STATE_ONBOARDING_3  = 'ONBOARDING_PHONE_VERIFY'
+WA_STATE_MENU          = 'MAIN_MENU'
+WA_STATE_HELP          = 'HELP'
+
+VITAL_TYPE_BP_SYSTOLIC  = 'BP_SYSTOLIC'    # mmHg
+VITAL_TYPE_BP_DIASTOLIC = 'BP_DIASTOLIC'   # mmHg
+VITAL_TYPE_GLUCOSE      = 'GLUCOSE'        # mg/dL
+VITAL_TYPE_SPO2         = 'SPO2'           # %
+VITAL_TYPE_WEIGHT       = 'WEIGHT'         # kg
+VITAL_TYPE_HEART_RATE   = 'HEART_RATE'     # bpm
+VITAL_TYPE_TEMP         = 'TEMPERATURE'    # °C
+
+BADGE_FIRST_DOSE        = 'FIRST_DOSE'
+BADGE_7_DAY_STREAK      = '7_DAY_STREAK'
+BADGE_30_DAY_STREAK     = '30_DAY_STREAK'
+BADGE_PERFECT_WEEK      = 'PERFECT_WEEK'
+BADGE_PERFECT_MONTH     = 'PERFECT_MONTH'
+BADGE_DEVICE_LINKED     = 'DEVICE_LINKED'
+BADGE_ABHA_LINKED       = 'ABHA_LINKED'
+BADGE_DIGITAL_RX        = 'DIGITAL_RX'
+BADGE_REFILL_PROACTIVE  = 'REFILL_PROACTIVE'  # ordered before running out
+BADGE_CAREGIVER_HERO    = 'CAREGIVER_HERO'    # caregiver badges
+
+ZONE_TYPE_HOME      = 'HOME'
+ZONE_TYPE_WORK      = 'WORK'
+ZONE_TYPE_GYM       = 'GYM'
+ZONE_TYPE_CUSTOM    = 'CUSTOM'
+
+TENANT_PLAN_CLINIC      = 'CLINIC'
+TENANT_PLAN_HOSPITAL    = 'HOSPITAL'
+TENANT_PLAN_ENTERPRISE  = 'ENTERPRISE'
+
+
 # ═══════════════════════════════════════════════════════════════════
 # EXT-1. NEW AGENT NAMES
 # ═══════════════════════════════════════════════════════════════════

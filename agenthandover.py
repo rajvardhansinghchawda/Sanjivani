@@ -992,6 +992,10 @@ class NotificationAgent(BaseAgent):
         payload.data['type'] = 'DEVICE_LOW_BATTERY'
         return self.dispatch(payload)
 
+    def send_device_offline_alert(self, payload: HandoverPayload) -> dict:
+        payload.data['type'] = 'DEVICE_OFFLINE'
+        return self.dispatch(payload)
+
     def send_security_alert(self, payload: HandoverPayload) -> dict:
         payload.data['type'] = 'SECURITY_ALERT'
         # Force email for security alerts regardless of preferences
