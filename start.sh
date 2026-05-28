@@ -74,6 +74,6 @@ celery -A config worker -l info --concurrency=2 &
 echo "Starting Celery beat..."
 celery -A config beat -l info --pidfile=/tmp/celerybeat.pid &
 
-# Start Daphne in the foreground (bind to port 7860 for Hugging Face)
-echo "Starting Daphne ASGI server on port 7860..."
-exec daphne -b 0.0.0.0 -p 7860 config.asgi:application
+# Start Gunicorn with Uvicorn ASGI workers in the foreground (bind to port 7860 for Hugging Face)
+echo "Starting Gunicorn server with 4 Uvicorn workers on port 7860..."
+exec gunicorn config.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:7860 --workers 4
