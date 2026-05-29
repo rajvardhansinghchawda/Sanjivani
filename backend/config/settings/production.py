@@ -70,7 +70,10 @@ if REDIS_URL:
         },
     }
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# Keep the Anymail backend set in base.py if Anymail is configured, otherwise default to SMTP
+if not EMAIL_BACKEND.startswith('anymail.'):
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
 
 if os.environ.get('SENTRY_DSN'):
     sentry_sdk.init(
