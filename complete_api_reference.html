@@ -1,0 +1,865 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.wrap{padding:8px 0;font-size:13px}
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.fp{padding:4px 12px;border-radius:16px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--color-border-secondary);color:var(--color-text-secondary);background:var(--color-background-secondary);transition:all .15s;user-select:none}
+.fp.on{border-color:transparent}
+.fp[data-g="ALL"].on{background:#378ADD;color:#042C53}
+.fp[data-g="Auth"].on{background:#9FE1CB;color:#04342C}
+.fp[data-g="Hospitals"].on{background:#AFA9EC;color:#26215C}
+.fp[data-g="Beds"].on{background:#B5D4F4;color:#042C53}
+.fp[data-g="Patients"].on{background:#FAC775;color:#412402}
+.fp[data-g="Ambulances"].on{background:#F5C4B3;color:#4A1B0C}
+.fp[data-g="Supervisor"].on{background:#F7C1C1;color:#501313}
+.fp[data-g="Analytics"].on{background:#C0DD97;color:#173404}
+.fp[data-g="AI Calls"].on{background:#D3D1C7;color:#2C2C2A}
+@media(prefers-color-scheme:dark){
+.fp[data-g="ALL"].on{background:#185FA5;color:#B5D4F4}
+.fp[data-g="Auth"].on{background:#085041;color:#9FE1CB}
+.fp[data-g="Hospitals"].on{background:#3C3489;color:#CECBF6}
+.fp[data-g="Beds"].on{background:#0C447C;color:#B5D4F4}
+.fp[data-g="Patients"].on{background:#633806;color:#FAC775}
+.fp[data-g="Ambulances"].on{background:#712B13;color:#F5C4B3}
+.fp[data-g="Supervisor"].on{background:#791F1F;color:#F7C1C1}
+.fp[data-g="Analytics"].on{background:#27500A;color:#C0DD97}
+.fp[data-g="AI Calls"].on{background:#444441;color:#D3D1C7}
+}
+.search{width:100%;padding:7px 12px;border:1px solid var(--color-border-secondary);border-radius:8px;font-size:12px;background:var(--color-background-secondary);color:var(--color-text-primary);margin-bottom:12px;outline:none}
+.search:focus{border-color:var(--color-border-primary)}
+.group-hdr{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.06em;padding:10px 0 4px;border-bottom:1px solid var(--color-border-tertiary);margin-bottom:6px}
+.api-row{display:grid;grid-template-columns:54px 1fr 90px;gap:8px;align-items:start;padding:7px 10px;border-radius:6px;margin-bottom:2px;cursor:pointer;border:1px solid transparent;transition:background .12s}
+.api-row:hover{background:var(--color-background-secondary)}
+.api-row.open{background:var(--color-background-secondary);border-color:var(--color-border-tertiary);border-radius:8px 8px 0 0;margin-bottom:0}
+.method{padding:2px 0;border-radius:4px;font-size:10px;font-weight:700;text-align:center}
+.m-GET{background:#E1F5EE;color:#085041}.m-POST{background:#E6F1FB;color:#0C447C}
+.m-PATCH{background:#FAEEDA;color:#633806}.m-DELETE{background:#FCEBEB;color:#791F1F}
+@media(prefers-color-scheme:dark){
+.m-GET{background:#085041;color:#9FE1CB}.m-POST{background:#0C447C;color:#B5D4F4}
+.m-PATCH{background:#633806;color:#FAC775}.m-DELETE{background:#791F1F;color:#F7C1C1}
+}
+.api-url{font-family:monospace;font-size:11.5px;color:var(--color-text-primary);word-break:break-all;line-height:1.5}
+.api-url .param{color:#1D9E75}
+.api-auth{font-size:10px;color:var(--color-text-secondary);text-align:right;white-space:nowrap}
+.api-detail{display:none;padding:8px 12px 12px;border:1px solid var(--color-border-tertiary);border-top:none;border-radius:0 0 8px 8px;background:var(--color-background-secondary);margin-bottom:8px}
+.api-detail.show{display:block}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:520px){.detail-grid{grid-template-columns:1fr}}
+.dl{font-size:10px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.code{background:var(--color-background-tertiary);border:1px solid var(--color-border-tertiary);border-radius:5px;padding:8px 10px;font-family:monospace;font-size:11px;color:var(--color-text-primary);white-space:pre-wrap;line-height:1.6;max-height:200px;overflow-y:auto}
+.desc{font-size:12px;color:var(--color-text-secondary);line-height:1.6;margin-bottom:8px}
+.badge{display:inline-block;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:500;margin-right:4px}
+.b-pub{background:#E1F5EE;color:#085041}.b-auth{background:#EEEDFE;color:#3C3489}.b-role{background:#FAEEDA;color:#633806}
+@media(prefers-color-scheme:dark){.b-pub{background:#085041;color:#9FE1CB}.b-auth{background:#3C3489;color:#CECBF6}.b-role{background:#633806;color:#FAC775}}
+.count{font-size:11px;color:var(--color-text-secondary);margin-bottom:10px}
+</style>
+
+<div class="wrap">
+<input class="search" id="srch" placeholder="Search endpoint, method, or keyword..." oninput="filter()">
+<div class="filters" id="fbar"></div>
+<div class="count" id="cnt"></div>
+<div id="list"></div>
+</div>
+
+<script>
+const data = [
+  {g:"Auth",m:"POST",url:"/api/auth/register/",auth:"Public",desc:"Creates a new user account. Role determines portal access. hospital field required for reception/supervisor/admin roles.",
+   body:`{
+  "email": "user@example.com",
+  "full_name": "Rahul Sharma",
+  "phone": "9876543210",
+  "role": "reception",
+  "hospital": "uuid-of-hospital",
+  "password": "Test@1234",
+  "password2": "Test@1234"
+}`,
+   res:`{
+  "message": "Account created successfully",
+  "user": {
+    "id": "uuid",
+    "email": "user@example.com",
+    "role": "reception",
+    "hospital": "uuid",
+    "hospital_name": "City Hospital"
+  }
+}`},
+  {g:"Auth",m:"POST",url:"/api/auth/login/",auth:"Public",desc:"Returns JWT access + refresh tokens. Role and hospital_id embedded in token payload — use these to decide which portal to show.",
+   body:`{
+  "email": "user@example.com",
+  "password": "Test@1234"
+}`,
+   res:`{
+  "access": "eyJhbGciOiJIUzI1NiJ9...",
+  "refresh": "eyJhbGciOiJIUzI1NiJ9...",
+  "user": { "id": "uuid", "role": "reception", "hospital": "uuid" }
+}`},
+  {g:"Auth",m:"POST",url:"/api/auth/logout/",auth:"IsAuthenticated",desc:"Blacklists the refresh token. Access token expires naturally after 8 hours.",
+   body:`{ "refresh": "eyJhbGciOiJIUzI1NiJ9..." }`,
+   res:`{ "message": "Logged out successfully" }`},
+  {g:"Auth",m:"POST",url:"/api/auth/token/refresh/",auth:"Public",desc:"Issues a new access token using a valid refresh token. Call when 401 received.",
+   body:`{ "refresh": "eyJhbGciOiJIUzI1NiJ9..." }`,
+   res:`{ "access": "eyJhbGciOiJIUzI1NiJ9...", "refresh": "..." }`},
+  {g:"Auth",m:"GET",url:"/api/auth/profile/",auth:"IsAuthenticated",desc:"Returns the logged-in user's full profile. No body needed — uses Authorization header.",
+   body:`Headers:\nAuthorization: Bearer <access_token>`,
+   res:`{
+  "id": "uuid",
+  "email": "user@example.com",
+  "full_name": "Rahul Sharma",
+  "role": "reception",
+  "hospital": "uuid",
+  "hospital_name": "City Hospital"
+}`},
+  {g:"Auth",m:"PATCH",url:"/api/auth/profile/",auth:"IsAuthenticated",desc:"Updates the logged-in user's profile fields.",
+   body:`{ "full_name": "New Name", "phone": "9999999999" }`,
+   res:`{ "id": "uuid", "full_name": "New Name", ... }`},
+  {g:"Auth",m:"POST",url:"/api/auth/change-password/",auth:"IsAuthenticated",desc:"Changes password. Requires current password for verification.",
+   body:`{ "old_password": "Test@1234", "new_password": "New@5678" }`,
+   res:`{ "message": "Password changed successfully" }`},
+
+  {g:"Hospitals",m:"GET",url:"/api/hospitals/search/",auth:"Public",desc:"Patient portal hospital search. All filters are optional query params. Results include live bed summary.",
+   body:`Query params:\n?city=Indore\n?lat=22.71&lng=75.85&radius=10\n?service=IMG_MRI\n?treatment=cardiology\n?category=private\n?has_icu=true\n?search=Choithram\n?page=1&page_size=10`,
+   res:`{
+  "count": 3,
+  "results": [{
+    "id": "uuid",
+    "name": "Choithram Hospital",
+    "category": "private",
+    "city": "Indore",
+    "phone": "0731-4233000",
+    "total_beds": 500,
+    "icu_capacity": 50,
+    "latitude": "22.6921",
+    "longitude": "75.8481",
+    "verification_status": "verified",
+    "services": [...],
+    "departments": [...]
+  }]
+}`},
+  {g:"Hospitals",m:"GET",url:"/api/hospitals/:id/",auth:"Public",desc:"Full hospital profile page. Returns all services, departments, contact info.",
+   body:`No body — GET request\nGET /api/hospitals/550e8400-e29b-41d4-a716-446655440000/`,
+   res:`{
+  "id": "uuid",
+  "name": "Choithram Hospital",
+  "phone": "0731-4233000",
+  "address": "Manik Bagh Road, Indore",
+  "total_beds": 500,
+  "icu_capacity": 50,
+  "services": [{"code":"IMG_MRI","name":"MRI Scan","is_available":true}],
+  "departments": [{"name":"ICU Ward","dept_type":"icu"}]
+}`},
+  {g:"Hospitals",m:"POST",url:"/api/hospitals/manage/",auth:"IsAdmin",desc:"Admin registers a new hospital. Can include departments and services in one call.",
+   body:`{
+  "name": "City Hospital",
+  "category": "private",
+  "hospital_type": "multispecialty",
+  "total_beds": 100,
+  "icu_capacity": 20,
+  "address": "MP Nagar",
+  "city": "Bhopal",
+  "area": "MP Nagar",
+  "district": "Bhopal",
+  "state": "Madhya Pradesh",
+  "pincode": "462011",
+  "phone": "07552345678",
+  "license_number": "MP-HOS-001",
+  "service_ids": ["svc-uuid-1", "svc-uuid-2"],
+  "departments_data": [
+    {"name": "ICU Ward", "dept_type": "icu"},
+    {"name": "Cardiology", "dept_type": "cardiology"}
+  ]
+}`,
+   res:`{
+  "id": "uuid",
+  "name": "City Hospital",
+  "verification_status": "pending",
+  "departments": [...]
+}`},
+  {g:"Hospitals",m:"PATCH",url:"/api/hospitals/manage/:id/verify/",auth:"IsSupervisor",desc:"Supervisor approves or rejects a hospital registration after document review.",
+   body:`{
+  "status": "approved"
+}
+// OR reject:
+{
+  "status": "rejected",
+  "rejection_reason": "License document expired"
+}`,
+   res:`{ "message": "Hospital approved successfully" }`},
+  {g:"Hospitals",m:"GET",url:"/api/hospitals/:id/on-duty-now/",auth:"Public",desc:"Returns doctors currently on shift right now. Supports ?specialization=icu filter.",
+   body:`Query params:\n?specialization=cardiology\n?department=dept-uuid`,
+   res:`{
+  "timestamp": "2024-01-15T14:30:00Z",
+  "total_on_duty": 3,
+  "doctors": [{
+    "full_name": "Dr. Anjali Mehta",
+    "specialization": "icu",
+    "phone": "9876543210",
+    "current_shift": {
+      "shift_type": "morning",
+      "shift_start": "2024-01-15T06:00:00Z",
+      "shift_end": "2024-01-15T14:00:00Z"
+    }
+  }]
+}`},
+  {g:"Hospitals",m:"GET",url:"/api/hospitals/:id/departments/",auth:"Public",desc:"Lists all active departments in a hospital.",
+   body:`No body — GET request`,
+   res:`[
+  {"id":"uuid","name":"ICU Ward","dept_type":"icu","floor":"2nd Floor"},
+  {"id":"uuid","name":"Cardiology","dept_type":"cardiology","floor":"3rd Floor"}
+]`},
+  {g:"Hospitals",m:"POST",url:"/api/hospitals/:id/departments/",auth:"IsReception",desc:"Adds a new department to the hospital.",
+   body:`{
+  "name": "Emergency Ward",
+  "dept_type": "emergency",
+  "floor": "Ground Floor"
+}`,
+   res:`{"id":"uuid","name":"Emergency Ward","dept_type":"emergency","is_active":true}`},
+  {g:"Hospitals",m:"GET",url:"/api/hospitals/service-categories/",auth:"Public",desc:"All service categories. Use to populate the registration form checklist.",
+   body:`No body — GET request`,
+   res:`[
+  {"id":"uuid","name":"Imaging","description":"Radiology and scanning services"},
+  {"id":"uuid","name":"ICU & Critical Care","description":"Intensive care unit services"}
+]`},
+  {g:"Hospitals",m:"GET",url:"/api/hospitals/services/",auth:"Public",desc:"All services in master list. Filter by ?category=<uuid>.",
+   body:`Query params:\n?category=cat-uuid`,
+   res:`[
+  {"id":"uuid","code":"IMG_MRI","name":"MRI Scan","category_name":"Imaging"},
+  {"id":"uuid","code":"BLD_BANK","name":"Blood Bank","category_name":"Blood"}
+]`},
+
+  {g:"Beds",m:"GET",url:"/api/beds/availability/:hospital_id/",auth:"Public",desc:"MOST CALLED API. Live bed counts by type. Served from Redis (2 min TTL). Every bed update invalidates this.",
+   body:`No body — GET request\nGET /api/beds/availability/550e8400.../`,
+   res:`{
+  "total_beds": 98,
+  "available_beds": 34,
+  "occupied_beds": 58,
+  "by_type": {
+    "icu":       {"total":18,"available":3,"occupied":14,"reserved":1},
+    "general":   {"total":70,"available":28,"occupied":40},
+    "ventilator":{"total":10,"available":3,"occupied":4,"maintenance":3}
+  }
+}`},
+  {g:"Beds",m:"GET",url:"/api/beds/hospital/:id/",auth:"IsStaff",desc:"Full list of beds at the hospital. Filter by ?bed_type=icu&status=available.",
+   body:`Query params:\n?bed_type=icu\n?status=available\n?ward_type=icu_ward`,
+   res:`[{
+  "id": "bed-uuid",
+  "bed_number": "ICU-01",
+  "bed_type": "icu",
+  "ward_type": "icu_ward",
+  "status": "available",
+  "department_name": "ICU Ward",
+  "is_available": true,
+  "occupancy_days": 0,
+  "last_updated": "2024-01-15T09:30:00Z"
+}]`},
+  {g:"Beds",m:"POST",url:"/api/beds/hospital/:id/",auth:"IsReception",desc:"Registers a new physical bed at the hospital. One call = one bed row.",
+   body:`{
+  "bed_number": "ICU-01",
+  "bed_type": "icu",
+  "ward_type": "icu_ward",
+  "department": "dept-uuid",
+  "notes": "Corner bed, near nursing station"
+}`,
+   res:`{
+  "id": "bed-uuid",
+  "bed_number": "ICU-01",
+  "bed_type": "icu",
+  "status": "available",
+  "is_active": true,
+  "last_updated": "2024-01-15T09:30:00Z"
+}`},
+  {g:"Beds",m:"PATCH",url:"/api/beds/:id/",auth:"IsReception",desc:"Updates a bed's status or notes. Invalidates Redis cache automatically.",
+   body:`{
+  "status": "maintenance",
+  "notes": "Side rail broken, sent for repair"
+}`,
+   res:`{
+  "id": "bed-uuid",
+  "bed_number": "ICU-01",
+  "status": "maintenance",
+  "last_updated": "2024-01-15T11:00:00Z"
+}`},
+  {g:"Beds",m:"POST",url:"/api/beds/admit/",auth:"IsReception",desc:"Admits a patient to a bed. Creates BedAllocation, sets bed to occupied, invalidates Redis.",
+   body:`{
+  "bed_id": "bed-uuid",
+  "patient_id": "patient-uuid",
+  "notes": "Post-op ICU monitoring"
+}`,
+   res:`{
+  "message": "Patient admitted successfully",
+  "allocation": {
+    "id": "alloc-uuid",
+    "bed_number": "ICU-01",
+    "patient_name": "Priya Sharma",
+    "admitted_at": "2024-01-15T10:00:00Z",
+    "is_active": true
+  }
+}`},
+  {g:"Beds",m:"POST",url:"/api/beds/discharge/",auth:"IsReception",desc:"Discharges patient from bed. Sets discharged_at, frees bed, invalidates Redis.",
+   body:`{
+  "allocation_id": "alloc-uuid",
+  "notes": "Patient recovered, discharged on request"
+}`,
+   res:`{
+  "message": "Patient discharged successfully",
+  "bed_number": "ICU-01",
+  "duration_days": 5
+}`},
+  {g:"Beds",m:"PATCH",url:"/api/beds/hospital/:id/bulk-update/",auth:"IsReception",desc:"Updates multiple beds in one request. Used at shift handover. One Redis invalidation for all.",
+   body:`{
+  "beds": [
+    {"id": "bed-uuid-1", "status": "available"},
+    {"id": "bed-uuid-2", "status": "maintenance", "notes": "Cleaning"},
+    {"id": "bed-uuid-3", "status": "reserved"}
+  ]
+}`,
+   res:`{ "updated": 3, "errors": [] }`},
+  {g:"Beds",m:"GET",url:"/api/beds/hospital/:id/long-occupancy/",auth:"IsStaff",desc:"Beds occupied longer than N days. Default 20 days. Supervisor uses this for fraud detection.",
+   body:`Query params:\n?days=20\n?hospital=hospital-uuid`,
+   res:`[{
+  "allocation_id": "alloc-uuid",
+  "bed_number": "ICU-12",
+  "bed_type": "icu",
+  "patient_name": "Ramesh Verma",
+  "admitted_at": "2023-12-20T10:00:00Z",
+  "days_occupied": 26
+}]`},
+  {g:"Beds",m:"GET",url:"/api/beds/hospital/:id/allocations/",auth:"IsStaff",desc:"All bed allocations. Filter by ?is_active=true for current admissions.",
+   body:`Query params:\n?is_active=true\n?bed_type=icu`,
+   res:`[{
+  "id": "alloc-uuid",
+  "bed_number": "ICU-01",
+  "patient_name": "Priya Sharma",
+  "admitted_at": "2024-01-10T10:00:00Z",
+  "duration_days": 5,
+  "is_active": true
+}]`},
+  {g:"Beds",m:"GET",url:"/api/beds/equipment/:hospital_id/",auth:"Public",desc:"Lists all medical equipment at the hospital with availability.",
+   body:`No body — GET request`,
+   res:`[{
+  "id": "equip-uuid",
+  "name": "Ventilator",
+  "equipment_type": "Ventilator",
+  "quantity": 10,
+  "available_quantity": 4,
+  "status": "available"
+}]`},
+  {g:"Beds",m:"POST",url:"/api/beds/equipment/:hospital_id/",auth:"IsReception",desc:"Registers new equipment at the hospital.",
+   body:`{
+  "name": "Ventilator",
+  "equipment_type": "Ventilator",
+  "manufacturer": "Philips",
+  "quantity": 10,
+  "available_quantity": 8,
+  "status": "available"
+}`,
+   res:`{"id":"equip-uuid","name":"Ventilator","quantity":10}`},
+  {g:"Beds",m:"PATCH",url:"/api/beds/equipment/item/:id/",auth:"IsReception",desc:"Updates equipment availability or status.",
+   body:`{
+  "available_quantity": 6,
+  "status": "in_use"
+}`,
+   res:`{"id":"equip-uuid","available_quantity":6,"status":"in_use"}`},
+
+  {g:"Patients",m:"POST",url:"/api/patients/register/",auth:"Public",desc:"Registers a new patient. No login required — walk-in patients can self-register.",
+   body:`{
+  "full_name": "Priya Sharma",
+  "phone": "9876543210",
+  "age": 34,
+  "gender": "female",
+  "blood_group": "B+",
+  "city": "Bhopal",
+  "emergency_contact_name": "Rohit Sharma",
+  "emergency_contact_phone": "9876543211"
+}`,
+   res:`{
+  "id": "patient-uuid",
+  "full_name": "Priya Sharma",
+  "phone": "9876543210",
+  "blood_group": "B+",
+  "is_admitted": false,
+  "current_admission": null
+}`},
+  {g:"Patients",m:"GET",url:"/api/patients/search/",auth:"IsReception",desc:"Finds patients by phone number. Call this BEFORE registering to avoid duplicates.",
+   body:`Query params:\n?phone=9876543210`,
+   res:`[{
+  "id": "patient-uuid",
+  "full_name": "Priya Sharma",
+  "phone": "9876543210",
+  "is_admitted": true,
+  "current_admission": {
+    "bed_number": "ICU-01",
+    "admitted_at": "2024-01-10T10:00:00Z",
+    "duration_days": 5
+  }
+}]`},
+  {g:"Patients",m:"GET",url:"/api/patients/:id/",auth:"IsStaff",desc:"Full patient profile with admission history.",
+   body:`No body — GET request`,
+   res:`{
+  "id": "patient-uuid",
+  "full_name": "Priya Sharma",
+  "phone": "9876543210",
+  "age": 34,
+  "blood_group": "B+",
+  "is_admitted": true,
+  "admission_history": [...]
+}`},
+  {g:"Patients",m:"POST",url:"/api/patients/transfers/create/",auth:"IsReception",desc:"Creates an emergency transfer request. Patient must be admitted at requesting hospital.",
+   body:`{
+  "patient": "patient-uuid",
+  "priority": "critical",
+  "reason": "ICU unavailable, needs ventilator",
+  "required_bed_type": "ventilator",
+  "required_services": "ICU_VENT,IMG_CT",
+  "notes": "Patient stable but needs ICU within 2 hours"
+}`,
+   res:`{
+  "id": "transfer-uuid",
+  "status": "pending",
+  "priority": "critical",
+  "patient_name": "Priya Sharma",
+  "from_hospital_name": "City Hospital",
+  "requested_at": "2024-01-15T14:00:00Z"
+}`},
+  {g:"Patients",m:"GET",url:"/api/patients/transfers/outgoing/",auth:"IsReception",desc:"Transfer requests this hospital has sent. Filter by ?status=pending.",
+   body:`Query params:\n?status=pending\n?priority=critical`,
+   res:`[{
+  "id": "transfer-uuid",
+  "status": "pending",
+  "priority": "critical",
+  "patient_name": "Priya Sharma",
+  "required_bed_type": "icu"
+}]`},
+  {g:"Patients",m:"GET",url:"/api/patients/transfers/incoming/",auth:"IsReception",desc:"Transfer requests this hospital can accept. Shows only requests NOT from this hospital.",
+   body:`Query params:\n?status=pending\n?priority=critical`,
+   res:`[{
+  "id": "transfer-uuid",
+  "status": "pending",
+  "priority": "critical",
+  "patient_name": "Priya Sharma",
+  "from_hospital_name": "MY Hospital",
+  "required_bed_type": "ventilator",
+  "requested_at": "2024-01-15T14:00:00Z"
+}]`},
+  {g:"Patients",m:"POST",url:"/api/patients/transfers/:id/respond/",auth:"IsReception",desc:"Accept or reject a transfer. On accept: Celery auto-fires Twilio call to receiving reception.",
+   body:`{
+  "action": "accept",
+  "notes": "ICU bed ready, please send patient"
+}
+// OR:
+{
+  "action": "reject",
+  "rejection_reason": "No ICU beds available"
+}`,
+   res:`{
+  "message": "Transfer accepted",
+  "transfer": {
+    "status": "accepted",
+    "to_hospital_name": "Care Hospital",
+    "responded_at": "2024-01-15T14:15:00Z"
+  }
+}`},
+  {g:"Patients",m:"POST",url:"/api/patients/transfers/:id/complete/",auth:"IsReception",desc:"Marks transfer complete when patient arrives. Auto-discharges from source, frees bed, invalidates Redis both hospitals.",
+   body:`No body needed\nPOST /api/patients/transfers/transfer-uuid/complete/`,
+   res:`{
+  "message": "Transfer completed. Patient discharged from source hospital.",
+  "next": "Admit patient using POST /api/beds/admit/"
+}`},
+
+  {g:"Ambulances",m:"GET",url:"/api/ambulances/available/",auth:"Public",desc:"Available ambulances in a city. Served from Redis (1 min TTL). Patient portal shows before booking.",
+   body:`Query params:\n?city=Indore\n?type=icu`,
+   res:`{
+  "city": "Indore",
+  "count": 3,
+  "ambulances": [{
+    "id": "amb-uuid",
+    "ambulance_type": "icu",
+    "driver_name": "Suresh Kumar",
+    "driver_phone": "9876500001",
+    "city": "Indore",
+    "service_rating": "4.80"
+  }]
+}`},
+  {g:"Ambulances",m:"POST",url:"/api/ambulances/book/",auth:"Public",desc:"Books nearest available ambulance. Auto-assigns highest-rated. WebSocket push to driver instantly.",
+   body:`{
+  "ambulance_type": "icu",
+  "pickup_address": "Bhopal Railway Station",
+  "pickup_city": "Bhopal",
+  "pickup_latitude": "23.2666",
+  "pickup_longitude": "77.4034",
+  "destination_hospital": "hosp-uuid",
+  "requester_name": "Rohit Sharma",
+  "requester_phone": "9876543211"
+}`,
+   res:`{
+  "message": "Ambulance booked successfully",
+  "request_id": "req-uuid",
+  "driver_name": "Suresh Kumar",
+  "driver_phone": "9876500001",
+  "vehicle": "MP-04-AB-1234",
+  "eta_note": "Driver will contact you shortly"
+}`},
+  {g:"Ambulances",m:"GET",url:"/api/ambulances/track/:request_id/",auth:"Public",desc:"Live driver location for a booking. Read from Redis (30 sec TTL). Poll every 10s on frontend.",
+   body:`No body — GET request\nGET /api/ambulances/track/req-uuid/`,
+   res:`{
+  "request_id": "req-uuid",
+  "status": "en_route",
+  "driver_name": "Suresh Kumar",
+  "driver_phone": "9876500001",
+  "vehicle": "MP-04-AB-1234",
+  "live_location": { "lat": 23.2501, "lng": 77.4110 }
+}`},
+  {g:"Ambulances",m:"POST",url:"/api/ambulances/driver/trip/:id/action/",auth:"IsAmbulanceDriver",desc:"Driver moves trip through lifecycle. Valid: accept → en_route → picked_up → complete / cancel.",
+   body:`{ "action": "picked_up" }
+// OR: 
+{ "action": "cancel", "reason": "Patient found transport" }`,
+   res:`{
+  "message": "Trip status updated to picked_up",
+  "request": {
+    "id": "req-uuid",
+    "status": "picked_up",
+    "accepted_at": "2024-01-15T14:05:00Z",
+    "response_time_minutes": 5.0
+  }
+}`},
+  {g:"Ambulances",m:"POST",url:"/api/ambulances/driver/location/",auth:"IsAmbulanceDriver",desc:"Driver sends GPS every 10s during trip. Stored ONLY in Redis (30s TTL) — never written to PostgreSQL.",
+   body:`{ "latitude": 23.2501, "longitude": 77.4110 }`,
+   res:`{ "message": "Location updated" }`},
+  {g:"Ambulances",m:"PATCH",url:"/api/ambulances/driver/availability/",auth:"IsAmbulanceDriver",desc:"Driver toggles their availability on/off.",
+   body:`{ "is_available": true }`,
+   res:`{ "message": "Availability updated", "status": "available" }`},
+  {g:"Ambulances",m:"PATCH",url:"/api/ambulances/:id/status/",auth:"Reception or Driver",desc:"Both reception and driver can update. Role determines which statuses are allowed.",
+   body:`{
+  "status": "maintenance",
+  "reason": "Tyre puncture, sent to garage"
+}`,
+   res:`{
+  "message": "Ambulance status updated to maintenance",
+  "old_status": "available",
+  "updated_by": "Rahul Sharma",
+  "role": "reception"
+}`},
+  {g:"Ambulances",m:"POST",url:"/api/ambulances/rate/:request_id/",auth:"Public",desc:"Patient rates driver after trip completes. Updates ambulance avg service_rating.",
+   body:`{ "rating": 5, "comment": "Very professional and fast" }`,
+   res:`{ "message": "Rating submitted", "new_avg_rating": "4.85" }`},
+  {g:"Ambulances",m:"GET",url:"/api/ambulances/driver/dashboard/",auth:"IsAmbulanceDriver",desc:"Driver's main screen data — ambulance info, active request, recent trips.",
+   body:`No body — GET request`,
+   res:`{
+  "ambulance": {"vehicle": "MP-04-AB-1234","type":"icu","status":"available"},
+  "active_request": null,
+  "trips_completed": 45,
+  "avg_rating": "4.80"
+}`},
+  {g:"Ambulances",m:"GET",url:"/api/ambulances/driver/trips/",auth:"IsAmbulanceDriver",desc:"Driver trip history with timestamps and ratings.",
+   body:`Query params:\n?status=completed\n?page=1`,
+   res:`[{
+  "id": "req-uuid",
+  "status": "completed",
+  "accepted_at": "...",
+  "completed_at": "...",
+  "response_time_minutes": 5,
+  "rating": 5
+}]`},
+
+  {g:"Supervisor",m:"GET",url:"/api/supervisor/dashboard/",auth:"IsSupervisor",desc:"Platform-wide overview. One card per hospital sorted by HIGH alert count.",
+   body:`No body — GET request`,
+   res:`{
+  "total_hospitals": 7,
+  "hospitals": [{
+    "hospital_id": "uuid",
+    "hospital_name": "MY Hospital",
+    "total_beds": 98,
+    "available_beds": 34,
+    "open_alerts": 3,
+    "high_alerts": 2,
+    "pending_transfers": 1,
+    "long_occupancy_beds": 2
+  }]
+}`},
+  {g:"Supervisor",m:"GET",url:"/api/supervisor/alerts/",auth:"IsStaff",desc:"All alerts with filters. Supports ?status=open &severity=high &alert_type=... &hospital=uuid.",
+   body:`Query params:\n?status=open\n?severity=high\n?alert_type=bed_long_occupancy\n?hospital=uuid`,
+   res:`[{
+  "id": "alert-uuid",
+  "alert_type": "bed_long_occupancy",
+  "severity": "high",
+  "status": "open",
+  "title": "Bed ICU-12 occupied for 26 days",
+  "hospital_name": "City Hospital",
+  "meta_data": {"bed_number":"ICU-12","days_occupied":26},
+  "created_at": "2024-01-15T06:00:00Z"
+}]`},
+  {g:"Supervisor",m:"POST",url:"/api/supervisor/alerts/",auth:"IsSupervisor",desc:"Manually raises a new alert for a hospital.",
+   body:`{
+  "hospital": "hosp-uuid",
+  "alert_type": "suspicious_bed_usage",
+  "severity": "high",
+  "title": "Bed shows occupied with no patient record",
+  "description": "Bed ICU-05 marked occupied since 3 days but no BedAllocation record exists"
+}`,
+   res:`{ "id": "alert-uuid", "status": "open", "created_at": "..." }`},
+  {g:"Supervisor",m:"POST",url:"/api/supervisor/alerts/:id/resolve/",auth:"IsSupervisor",desc:"Moves alert through lifecycle. Actions: investigate, resolve, dismiss.",
+   body:`{
+  "action": "resolve",
+  "resolution_note": "Visited on 15 Jan. Patient confirmed present. Family requested extended care."
+}`,
+   res:`{
+  "message": "Alert resolved successfully",
+  "alert": {
+    "status": "resolved",
+    "resolved_by_name": "Supervisor Singh",
+    "resolved_at": "2024-01-15T15:00:00Z"
+  }
+}`},
+  {g:"Supervisor",m:"PATCH",url:"/api/supervisor/correct/bed/:id/",auth:"IsSupervisor",desc:"Supervisor directly corrects a bed status after physical verification. Auto-creates audit alert.",
+   body:`{
+  "status": "available",
+  "correction_reason": "Patient discharged 2 days ago, reception forgot to update"
+}`,
+   res:`{
+  "message": "Bed corrected",
+  "bed_number": "ICU-12",
+  "old_status": "occupied",
+  "new_status": "available",
+  "audit_alert": "Created automatically"
+}`},
+  {g:"Supervisor",m:"PATCH",url:"/api/supervisor/correct/patient/:id/",auth:"IsSupervisor",desc:"Supervisor corrects patient demographic or record data.",
+   body:`{
+  "phone": "9876543210",
+  "correction_reason": "Wrong phone number entered by reception"
+}`,
+   res:`{ "message": "Patient record corrected", "audit_alert": "Created" }`},
+  {g:"Supervisor",m:"PATCH",url:"/api/supervisor/correct/allocation/:id/",auth:"IsSupervisor",desc:"Force discharge or fix allocation dates. Also frees the bed if correcting to discharged.",
+   body:`{
+  "action": "force_discharge",
+  "correction_reason": "Patient left 3 days ago, record not updated"
+}`,
+   res:`{ "message": "Allocation corrected and bed freed", "audit_alert": "Created" }`},
+  {g:"Supervisor",m:"GET",url:"/api/supervisor/long-occupancy/",auth:"IsSupervisor",desc:"All beds across all hospitals past the threshold. Sorted by days_occupied desc.",
+   body:`Query params:\n?days=20\n?hospital=uuid`,
+   res:`{
+  "threshold_days": 20,
+  "total": 4,
+  "beds": [{
+    "bed_number": "ICU-12",
+    "hospital_name": "City Hospital",
+    "patient_name": "Ramesh Verma",
+    "days_occupied": 26,
+    "severity": "high"
+  }]
+}`},
+  {g:"Supervisor",m:"GET",url:"/api/supervisor/verifications/pending/",auth:"IsSupervisor",desc:"Hospitals waiting for supervisor verification.",
+   body:`No body — GET request`,
+   res:`{
+  "count": 2,
+  "pending": [{
+    "id": "reg-uuid",
+    "hospital_name": "New Care Hospital",
+    "status": "pending",
+    "registration_date": "2024-01-10"
+  }]
+}`},
+  {g:"Supervisor",m:"POST",url:"/api/supervisor/run-checks/",auth:"IsSupervisor",desc:"Manually triggers any of the 5 Celery monitoring tasks on demand.",
+   body:`{
+  "check_type": "long_occupancy"
+}
+// Options: long_occupancy | missing_updates | mismatch | transfer_delay | verifications`,
+   res:`{ "message": "Check triggered", "task_id": "celery-task-uuid" }`},
+  {g:"Supervisor",m:"POST",url:"/api/supervisor/resources/",auth:"IsReception",desc:"Reception logs a resource snapshot. Supervisor compares with actual counts to detect mismatch.",
+   body:`{
+  "hospital": "hosp-uuid",
+  "resource_type": "bed",
+  "total_count": 98,
+  "available_count": 34,
+  "notes": "Shift handover count"
+}`,
+   res:`{"id":"res-uuid","recorded_at":"2024-01-15T09:00:00Z"}`},
+
+  {g:"Analytics",m:"GET",url:"/api/analytics/dashboard/",auth:"IsAdmin",desc:"Top-level platform KPIs. All numbers in one call. Admin sees this on login.",
+   body:`No body — GET request`,
+   res:`{
+  "generated_at": "2024-01-15T14:30:00Z",
+  "hospitals": {"total":7,"verified":6,"pending":1},
+  "beds": {"total":3800,"available":1400,"occupancy_rate":63.2},
+  "patients": {"admitted":2400,"admitted_today":32,"discharged_today":27},
+  "transfers": {"pending":4,"completed_today":3},
+  "ambulances": {"available":38,"trips_today":12},
+  "alerts": {"open":7,"high":3}
+}`},
+  {g:"Analytics",m:"GET",url:"/api/analytics/beds/utilisation/",auth:"IsAdmin",desc:"Bed occupancy rates by hospital and by bed type. Supports date range and filters.",
+   body:`Query params:\n?from_date=2024-01-01\n?to_date=2024-01-31\n?hospital=uuid\n?bed_type=icu`,
+   res:`{
+  "period": "2024-01-01 to 2024-01-31",
+  "avg_stay_days": 5.4,
+  "by_hospital": [{"hospital_name":"City Hospital","occupancy_rate":59.2}],
+  "by_type": [{"bed_type":"icu","available":3,"occupied":14,"occupancy_rate":77.8}]
+}`},
+  {g:"Analytics",m:"GET",url:"/api/analytics/beds/trend/",auth:"IsAdmin",desc:"Daily admissions vs discharges. Array ready for Chart.js line chart.",
+   body:`Query params:\n?from_date=2024-01-01\n?to_date=2024-01-15\n?hospital=uuid`,
+   res:`{
+  "period": "2024-01-01 to 2024-01-15",
+  "trend": [
+    {"date":"2024-01-01","admissions":28,"discharges":25},
+    {"date":"2024-01-02","admissions":32,"discharges":30}
+  ]
+}`},
+  {g:"Analytics",m:"GET",url:"/api/analytics/transfers/",auth:"IsAdmin",desc:"Transfer analysis — top senders, receivers, reasons, avg response times.",
+   body:`Query params:\n?from_date=2024-01-01\n?city=Indore`,
+   res:`{
+  "total_transfers": 234,
+  "pending": 4,
+  "top_senders": [{"hospital":"MY Hospital","count":12}],
+  "reasons": [{"reason":"ICU unavailable","count":8}],
+  "avg_response_time_minutes": 18.5
+}`},
+  {g:"Analytics",m:"GET",url:"/api/analytics/hospitals/performance/",auth:"IsAdmin",desc:"Per-hospital scorecard. Supports ?export=csv for downloadable file.",
+   body:`Query params:\n?from_date=2024-01-01\n?city=Indore\n?export=csv`,
+   res:`JSON or CSV download:
+Hospital, City, Occupancy%, Admissions, Avg Stay, Transfers Sent, Open Alerts
+
+City Hospital, Indore, 59.2, 420, 5.4, 8, 2`},
+  {g:"Analytics",m:"GET",url:"/api/analytics/ambulances/",auth:"IsAdmin",desc:"Ambulance analytics — trips, response times, ratings, availability trends.",
+   body:`Query params:\n?from_date=2024-01-01`,
+   res:`{
+  "total_trips": 234,
+  "avg_response_time_minutes": 7.2,
+  "avg_rating": 4.6,
+  "trips_by_type": [{"type":"icu","count":45}]
+}`},
+  {g:"Analytics",m:"GET",url:"/api/analytics/services/",auth:"IsAdmin",desc:"Which services are offered across most hospitals.",
+   body:`No body — GET request`,
+   res:`[{
+  "service_name": "MRI Scan",
+  "service_code": "IMG_MRI",
+  "hospitals_offering": 5,
+  "available_count": 4
+}]`},
+  {g:"Analytics",m:"GET",url:"/api/analytics/alerts/",auth:"IsAdmin",desc:"Alert analytics — frequency, resolution times, patterns by type.",
+   body:`Query params:\n?from_date=2024-01-01`,
+   res:`{
+  "total_alerts": 45,
+  "resolved": 38,
+  "avg_resolution_hours": 6.5,
+  "by_type": [{"type":"bed_long_occupancy","count":18}]
+}`},
+  {g:"Analytics",m:"GET",url:"/api/analytics/my-hospital/",auth:"IsStaff",desc:"Reception-level report for their own hospital only. Supports ?export=csv.",
+   body:`Query params:\n?from_date=2024-01-01\n?export=csv`,
+   res:`{
+  "hospital": "City Hospital",
+  "beds": {"total":98,"occupied":58,"occupancy_rate":59.2},
+  "patients": {"admitted":420,"discharged":395},
+  "transfers": {"sent":8,"received":3},
+  "open_alerts": 2,
+  "records": [{"patient_name":"Priya Sharma","bed":"ICU-01","duration_days":5}]
+}`},
+
+  {g:"AI Calls",m:"POST",url:"/api/calls/user-agent/request/",auth:"Public",desc:"User requests Aarohi AI callback. Twilio calls user within 5 seconds. No login needed.",
+   body:`{
+  "phone": "9876543210",
+  "city": "Indore"
+}`,
+   res:`{
+  "message": "Our agent will call you in a few seconds",
+  "session_id": "session-uuid",
+  "phone": "+919876543210"
+}`},
+  {g:"AI Calls",m:"POST",url:"/api/calls/transfer/:id/call/",auth:"IsAuthenticated",desc:"Manually triggers the transfer notification call to receiving hospital. Also fired automatically by Celery on transfer accept.",
+   body:`No body needed\nPOST /api/calls/transfer/transfer-uuid/call/`,
+   res:`{
+  "message": "Transfer notification call initiated",
+  "calling": "Care Hospital",
+  "phone": "+910731XXXXXXX",
+  "twilio_sid": "CAxxxx"
+}`},
+  {g:"AI Calls",m:"POST",url:"/api/calls/webhook/incoming/",auth:"Twilio",desc:"Twilio calls this when someone dials your Twilio number directly. Creates session and starts language selection.",
+   body:`Twilio POST data:\nCallSid=CAxxxx\nFrom=+919876543210\nTo=+16562554949`,
+   res:`<?xml version="1.0"?>\n<Response>\n  <Redirect>...agent/greet/{session_id}/</Redirect>\n</Response>`},
+  {g:"AI Calls",m:"POST",url:"/api/calls/webhook/agent/greet/:session_id/",auth:"Twilio",desc:"First webhook when call connects. Returns TwiML asking language preference.",
+   body:`Twilio POST data:\nCallSid=CAxxxx`,
+   res:`TwiML: Gather numDigits=1\n"Press 1 for English / 2 ke liye Hindi dabaye"\nRedirects to language endpoint`},
+  {g:"AI Calls",m:"POST",url:"/api/calls/webhook/agent/language/:session_id/",auth:"Twilio",desc:"Handles 1/2 keypress. Sets language in session. Returns greeting TwiML with all hospital names.",
+   body:`Twilio POST:\nDigits=1 (English) or 2 (Hindi)`,
+   res:`TwiML: Aarohi greets + lists all hospitals in city\nThen Gather input=speech for user response`},
+  {g:"AI Calls",m:"POST",url:"/api/calls/webhook/agent/process/:session_id/",auth:"Twilio",desc:"Core conversation loop. Receives user speech → calls Groq → returns TwiML response. Loops until bye.",
+   body:`Twilio POST:\nSpeechResult=I need ICU beds in Indore\nConfidence=0.92`,
+   res:`TwiML: Aarohi's response from Groq\n(hospital data + bed counts from DB)\nThen Gather for next user input`},
+  {g:"AI Calls",m:"POST",url:"/api/calls/webhook/transfer/:id/",auth:"Twilio",desc:"Called when Twilio connects the transfer notification call to receiving hospital.",
+   body:`Twilio POST:\nCallSid=CAxxxx`,
+   res:`TwiML: Reads patient details in English then Hindi\nThen Gather numDigits=1 for acknowledgement`},
+  {g:"AI Calls",m:"POST",url:"/api/calls/webhook/status/",auth:"Twilio",desc:"Twilio calls this when any call ends. Updates CallLog with final status and duration.",
+   body:`Twilio POST:\nCallSid=CAxxxx\nCallStatus=completed\nCallDuration=120`,
+   res:`HTTP 200 OK\n(updates CallLog in DB)`},
+];
+
+const groups = ["ALL","Auth","Hospitals","Beds","Patients","Ambulances","Supervisor","Analytics","AI Calls"];
+let activeG = "ALL", openId = null;
+
+function render(){
+  const q = document.getElementById('srch').value.toLowerCase();
+  const list = document.getElementById('list');
+  list.innerHTML = '';
+
+  let shown = 0;
+  const byGroup = {};
+  data.forEach((ep, i) => {
+    if(activeG !== "ALL" && ep.g !== activeG) return;
+    if(q && !ep.url.toLowerCase().includes(q) && !ep.m.toLowerCase().includes(q) && !ep.desc.toLowerCase().includes(q) && !ep.g.toLowerCase().includes(q)) return;
+    if(!byGroup[ep.g]) byGroup[ep.g] = [];
+    byGroup[ep.g].push({ep, i});
+    shown++;
+  });
+
+  document.getElementById('cnt').textContent = shown + ' endpoint' + (shown===1?'':'s') + ' shown';
+
+  Object.entries(byGroup).forEach(([grp, items]) => {
+    const gh = document.createElement('div');
+    gh.className = 'group-hdr';
+    gh.textContent = grp;
+    list.appendChild(gh);
+
+    items.forEach(({ep, i}) => {
+      const row = document.createElement('div');
+      row.className = 'api-row' + (openId===i?' open':'');
+      row.innerHTML = `
+        <span class="method m-${ep.m}">${ep.m}</span>
+        <span class="api-url">${ep.url.replace(/:[a-z_]+/g, m=>`<span class="param">${m}</span>`)}</span>
+        <span class="api-auth"><span class="badge ${ep.auth==='Public'?'b-pub':ep.auth==='Twilio'?'b-pub':'b-role'}">${ep.auth}</span></span>
+      `;
+      row.onclick = () => { openId = openId===i ? null : i; render(); };
+      list.appendChild(row);
+
+      if(openId === i){
+        const detail = document.createElement('div');
+        detail.className = 'api-detail show';
+        detail.innerHTML = `
+          <p class="desc">${ep.desc}</p>
+          <div class="detail-grid">
+            <div><div class="dl">Request body / params</div><div class="code">${ep.body}</div></div>
+            <div><div class="dl">Response example</div><div class="code">${ep.res}</div></div>
+          </div>
+        `;
+        list.appendChild(detail);
+      }
+    });
+  });
+}
+
+function filter(){ render(); }
+
+// build filter pills
+const fbar = document.getElementById('fbar');
+groups.forEach(g => {
+  const p = document.createElement('span');
+  p.className = 'fp' + (g==='ALL'?' on':'');
+  p.dataset.g = g;
+  p.textContent = g === 'ALL' ? 'All groups' : g;
+  p.onclick = () => {
+    activeG = g;
+    document.querySelectorAll('.fp').forEach(x => x.classList.remove('on'));
+    p.classList.add('on');
+    openId = null;
+    render();
+  };
+  fbar.appendChild(p);
+});
+
+render();
+</script>

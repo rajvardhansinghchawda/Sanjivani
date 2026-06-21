@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MedGrid</string>
+    <string name="title_activity_main">MedGrid</string>
+    <string name="package_name">com.MedGrid.app</string>
+    <string name="custom_url_scheme">com.MedGrid.app</string>
+</resources>
