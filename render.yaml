@@ -44,7 +44,7 @@ services:
     name: sanjivani-frontend
     runtime: static
     rootDir: frontend/hospital
-    buildCommand: npm install && npm run build
+    buildCommand: chmod -R +x node_modules/.bin 2>/dev/null || true && npm run build
     staticPublishPath: dist
     routes:
       - type: rewrite
