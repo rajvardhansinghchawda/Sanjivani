@@ -7,6 +7,7 @@ services:
     runtime: python
     plan: free
     region: oregon
+    healthCheckPath: /healthz/
     buildCommand: ./build.sh
     startCommand: cd backend && daphne -b 0.0.0.0 -p $PORT config.asgi:application
     envVars:
