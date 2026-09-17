@@ -36,7 +36,7 @@ services:
       - key: TWILIO_PHONE_NUMBER
         sync: false
       - key: BASE_WEBHOOK_URL
-        value: https://sanjivani-backend.onrender.com
+        value: https://sanjivani-backend-8gpy.onrender.com
 
   # =================================================================
   # React + Vite Frontend SPA (Hospital Dashboard, Reception, Triage)
@@ -53,8 +53,8 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_BASE_URL
-        value: https://sanjivani-backend.onrender.com
+        value: https://sanjivani-backend-8gpy.onrender.com
       - key: VITE_API_BASE
-        value: https://sanjivani-backend.onrender.com
+        value: https://sanjivani-backend-8gpy.onrender.com
       - key: VITE_GOOGLE_MAPS_API_KEY
         value: AIzaSyAaHAE2MVl1Lrf48O0KJ7-L7MtXWkNgojY
