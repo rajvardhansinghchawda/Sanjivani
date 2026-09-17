@@ -43,7 +43,6 @@ services:
   - type: web
     name: sanjivani-frontend
     runtime: static
-    plan: free
     rootDir: frontend/hospital
     buildCommand: npm install && npm run build
     staticPublishPath: dist
