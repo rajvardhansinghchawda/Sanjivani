@@ -66,6 +66,14 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = ['*']
+CORS_EXPOSE_HEADERS = ['*']
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\.onrender\.com$",
+    r"^https://.*\.ngrok-free\.app$",
+    r"^https://.*\.trycloudflare\.com$",
+]
 
 ROOT_URLCONF = 'config.urls'
 WSGI_APPLICATION = 'config.wsgi.application'
@@ -75,9 +83,6 @@ CSRF_TRUSTED_ORIGINS = [
     "https://*.onrender.com",
     "https://4c7d-47-247-173-78.ngrok-free.app",
 ]
-CORS_ALLOW_HEADERS = ['*']
-
-CORS_ALLOW_CREDENTIALS = True
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
