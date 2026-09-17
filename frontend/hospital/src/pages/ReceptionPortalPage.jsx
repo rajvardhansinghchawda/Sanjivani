@@ -77,8 +77,19 @@ const ReceptionPortalPage = () => {
 
   // --- Auto-Admit WebSocket ---
   useEffect(() => {
-    const WS_HOST = window.location.host.replace("5173", "8000").replace("3000", "8000");
-    const ws = new WebSocket(`ws://${WS_HOST}/ws/triage/`);
+    const baseApi = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_BASE;
+    let wsUrl = '';
+    if (baseApi) {
+      const clean = baseApi.replace(/\/$/, "");
+      const wsProto = clean.startsWith("https") ? "wss:" : "ws:";
+      const host = clean.replace(/^https?:\/\//, "");
+      wsUrl = `${wsProto}//${host}/ws/triage/`;
+    } else {
+      const wsProto = window.location.protocol === "https:" ? "wss:" : "ws:";
+      const WS_HOST = window.location.host.replace("5173", "8000").replace("3000", "8000");
+      wsUrl = `${wsProto}//${WS_HOST}/ws/triage/`;
+    }
+    const ws = new WebSocket(wsUrl);
     
     ws.onmessage = (e) => {
       try {

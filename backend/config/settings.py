@@ -13,8 +13,8 @@ DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
 
-# This line allows ALL ngrok URLs automatically — add it right below:
-ALLOWED_HOSTS += ['.ngrok-free.app', '.ngrok.io', '.ngrok.app', '.trycloudflare.com']
+# This line allows ALL ngrok, Cloudflare, and Render URLs automatically:
+ALLOWED_HOSTS += ['.ngrok-free.app', '.ngrok.io', '.ngrok.app', '.trycloudflare.com', '.onrender.com']
 # --- Apps ---
 DJANGO_APPS = [
     'daphne',
@@ -56,6 +56,7 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -69,7 +70,10 @@ CORS_ALLOW_ALL_ORIGINS = True
 ROOT_URLCONF = 'config.urls'
 WSGI_APPLICATION = 'config.wsgi.application'
 CSRF_TRUSTED_ORIGINS = [
-    "https://4c7d-47-247-173-78.ngrok-free.app"
+    "https://*.ngrok-free.app",
+    "https://*.trycloudflare.com",
+    "https://*.onrender.com",
+    "https://4c7d-47-247-173-78.ngrok-free.app",
 ]
 CORS_ALLOW_HEADERS = ['*']
 
@@ -91,32 +95,54 @@ TEMPLATES = [
 ]
 
 # --- Database ---
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME':     env('DB_NAME'),
-        'USER':     env('DB_USER'),
-        'PASSWORD': env('DB_PASSWORD'),
-        'HOST':     env('DB_HOST'),
-        'PORT':     env('DB_PORT'),
+if env('DATABASE_URL', default=None):
+    DATABASES = {
+        'default': env.db('DATABASE_URL')
     }
-}
+    DATABASES['default'].setdefault('OPTIONS', {})
+    if 'sslmode' not in DATABASES['default']['OPTIONS'] and env('DB_SSLMODE', default=None):
+        DATABASES['default']['OPTIONS']['sslmode'] = env('DB_SSLMODE')
+else:
+    db_options = {}
+    if env('DB_SSLMODE', default=None):
+        db_options['sslmode'] = env('DB_SSLMODE')
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME':     env('DB_NAME'),
+            'USER':     env('DB_USER'),
+            'PASSWORD': env('DB_PASSWORD'),
+            'HOST':     env('DB_HOST'),
+            'PORT':     env('DB_PORT', default='5432'),
+            'OPTIONS':  db_options,
+        }
+    }
 
 # --- Redis Cache ---
-CACHES = {
-    'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': env('REDIS_URL'),
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-        },
-        'TIMEOUT': 300,  # 5 minutes default
+redis_url = env('REDIS_URL', default=None)
+if redis_url and str(redis_url).startswith('redis://'):
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': redis_url,
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            },
+            'TIMEOUT': 300,  # 5 minutes default
+        }
     }
-}
+    CELERY_BROKER_URL = env('CELERY_BROKER_URL', default=redis_url)
+    CELERY_RESULT_BACKEND = redis_url
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'sanjivani-cache',
+        }
+    }
+    CELERY_BROKER_URL = env('CELERY_BROKER_URL', default='memory://')
+    CELERY_RESULT_BACKEND = 'cache+memory://'
 
-# --- Celery ---
-CELERY_BROKER_URL = env('CELERY_BROKER_URL')
-CELERY_RESULT_BACKEND = env('REDIS_URL')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 
@@ -151,6 +177,7 @@ AUTH_USER_MODEL = 'authentication.User'
 # --- Static & Media ---
 STATIC_URL  = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 MEDIA_URL   = '/media/'
 MEDIA_ROOT  = BASE_DIR / 'media'
 
@@ -191,22 +218,29 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
-# Channel layers — uses same Redis as cache but different DB index
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG' : {
-            'hosts': [env('REDIS_CHANNELS_URL', default='redis://localhost:6379/2')],
-            # use DB index 2 — keep separate from cache (0) and Celery (1)
+# Channel layers — uses Redis if available, else fallback to InMemoryChannelLayer
+redis_channels_url = env('REDIS_CHANNELS_URL', default=redis_url if redis_url else None)
+if redis_channels_url and str(redis_channels_url).startswith('redis://'):
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG' : {
+                'hosts': [redis_channels_url],
+            },
         },
-    },
-}
+    }
+else:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        },
+    }
 
 # Switch WSGI → ASGI so channels can handle WebSockets
 ASGI_APPLICATION = 'config.asgi.application'
-TWILIO_ACCOUNT_SID  = env('TWILIO_ACCOUNT_SID')
-TWILIO_AUTH_TOKEN   = env('TWILIO_AUTH_TOKEN')
-TWILIO_PHONE_NUMBER = env('TWILIO_PHONE_NUMBER')
-BASE_WEBHOOK_URL    = env('BASE_WEBHOOK_URL')
-GROQ_API_KEY = env('GROQ_API_KEY')
+TWILIO_ACCOUNT_SID  = env('TWILIO_ACCOUNT_SID', default='')
+TWILIO_AUTH_TOKEN   = env('TWILIO_AUTH_TOKEN', default='')
+TWILIO_PHONE_NUMBER = env('TWILIO_PHONE_NUMBER', default='')
+BASE_WEBHOOK_URL    = env('BASE_WEBHOOK_URL', default='')
+GROQ_API_KEY        = env('GROQ_API_KEY', default='')
 

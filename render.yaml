@@ -1,0 +1,61 @@
+services:
+  # =================================================================
+  # Django Channels ASGI Backend (API, WebSockets, Admin)
+  # =================================================================
+  - type: web
+    name: sanjivani-backend
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: ./build.sh
+    startCommand: cd backend && daphne -b 0.0.0.0 -p $PORT config.asgi:application
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.11
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: "*"
+      - key: DATABASE_URL
+        value: postgresql://neondb_owner:npg_R4dr8aOslzQf@ep-polished-wave-arh860bn.c-4.us-west-2.aws.neon.tech/neondb?sslmode=require
+      - key: DB_SSLMODE
+        value: require
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_PHONE_NUMBER
+        sync: false
+      - key: BASE_WEBHOOK_URL
+        value: https://sanjivani-backend.onrender.com
+
+  # =================================================================
+  # React + Vite Frontend SPA (Hospital Dashboard, Reception, Triage)
+  # =================================================================
+  - type: web
+    name: sanjivani-frontend
+    runtime: static
+    plan: free
+    region: oregon
+    rootDir: frontend/hospital
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://sanjivani-backend.onrender.com
+      - key: VITE_API_BASE
+        value: https://sanjivani-backend.onrender.com
+      - key: VITE_GOOGLE_MAPS_API_KEY
+        value: AIzaSyAaHAE2MVl1Lrf48O0KJ7-L7MtXWkNgojY

@@ -4,16 +4,21 @@
 
 import { useState, useEffect, useRef } from "react";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
+const rawApi = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_BASE || "http://localhost:8000";
+const API_BASE = rawApi.replace(/\/$/, "");
 
-const SEVERITY_CONFIG = {
-  P1: { label: "Critical", color: "#E24B4A", bg: "#FCEBEB", icon: "🚨" },
-  P2: { label: "Urgent",   color: "#EF9F27", bg: "#FAEEDA", icon: "⚠️" },
-  P3: { label: "Moderate", color: "#378ADD", bg: "#E6F1FB", icon: "🔵" },
-  P4: { label: "Low",      color: "#639922", bg: "#EAF3DE", icon: "🟢" },
+const getWsUrl = () => {
+  const base = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_BASE;
+  if (base) {
+    const clean = base.replace(/\/$/, "");
+    const wsProto = clean.startsWith("https") ? "wss:" : "ws:";
+    const host = clean.replace(/^https?:\/\//, "");
+    return `${wsProto}//${host}/ws/triage/`;
+  }
+  const wsProto = window.location.protocol === "https:" ? "wss:" : "ws:";
+  const wsHost = window.location.host.replace("5173", "8000").replace("3000", "8000");
+  return `${wsProto}//${wsHost}/ws/triage/`;
 };
-
-const WS_HOST = window.location.host.replace("5173", "8000").replace("3000", "8000");
 
 export default function TriageDashboard() {
   const [cases, setCases]           = useState([]);
@@ -60,7 +65,7 @@ export default function TriageDashboard() {
       })
       .catch(err => console.error("Failed to load cases:", err));
 
-    const ws = new WebSocket(`ws://${WS_HOST}/ws/triage/`);
+    const ws = new WebSocket(getWsUrl());
     wsRef.current = ws;
     ws.onopen    = () => setWsStatus("connected");
     ws.onmessage = (e) => {

@@ -386,7 +386,8 @@ def seed_data():
             department = available_departments[idx % len(available_departments)]
             # Generate unique registration number per hospital
             hospital_code = hospital.name.split()[0][:3].upper()
-            registration_no = f"{hospital_code}-DOC-{idx+1:04d}"
+            import uuid
+            registration_no = f"{hospital_code}-DOC-{str(uuid.uuid4())[:4].upper()}-{idx+1:04d}"
             
             doctor, created_flag = Doctor.objects.get_or_create(
                 registration_no=registration_no,
