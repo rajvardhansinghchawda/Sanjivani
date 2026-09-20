@@ -83,11 +83,17 @@ const LandingPage = () => {
       setGridLoading(true);
       setGridError('');
       try {
-        const selectedCity = new URLSearchParams(window.location.search).get('city') || 'Bhopal';
-        const res = await apiFetch(`/api/hospitals/search/?city=${encodeURIComponent(selectedCity)}`);
+        const selectedCity = new URLSearchParams(window.location.search).get('city') || 'Indore';
+        const url = selectedCity ? `/api/hospitals/search/?city=${encodeURIComponent(selectedCity)}` : '/api/hospitals/search/';
+        const res = await apiFetch(url);
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.detail || 'Failed to load hospitals');
-        const list = Array.isArray(data) ? data : data.results || [];
+        let list = Array.isArray(data) ? data : data.results || [];
+        if (list.length === 0 && selectedCity) {
+          const fallbackRes = await apiFetch('/api/hospitals/search/');
+          const fallbackData = await fallbackRes.json().catch(() => ({}));
+          list = Array.isArray(fallbackData) ? fallbackData : fallbackData.results || [];
+        }
         setGridHospitals(list.slice(0, 6));
       } catch (error) {
         setGridHospitals([]);

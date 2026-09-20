@@ -20,6 +20,45 @@ const getWsUrl = () => {
   return `${wsProto}//${wsHost}/ws/triage/`;
 };
 
+const SEVERITY_CONFIG = {
+  P1: {
+    label: "Critical",
+    color: "#dc2626",
+    bg: "#fef2f2",
+    border: "#fca5a5",
+    badgeBg: "#dc2626",
+    icon: "🚨",
+    actionColor: "#7f1d1d",
+  },
+  P2: {
+    label: "Urgent",
+    color: "#d97706",
+    bg: "#fffbeb",
+    border: "#fcd34d",
+    badgeBg: "#d97706",
+    icon: "⚠️",
+    actionColor: "#78350f",
+  },
+  P3: {
+    label: "Moderate",
+    color: "#2563eb",
+    bg: "#eff6ff",
+    border: "#93c5fd",
+    badgeBg: "#2563eb",
+    icon: "🔵",
+    actionColor: "#1e3a8a",
+  },
+  P4: {
+    label: "Low",
+    color: "#16a34a",
+    bg: "#f0fdf4",
+    border: "#86efac",
+    badgeBg: "#16a34a",
+    icon: "🟢",
+    actionColor: "#14532d",
+  },
+};
+
 export default function TriageDashboard() {
   const [cases, setCases]           = useState([]);
   const [wsStatus, setWsStatus]     = useState("connecting");
